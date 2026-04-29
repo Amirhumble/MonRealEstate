@@ -1,5 +1,6 @@
 import express from "express";
 import propertyRoutes  from "./routes/propertyRoutes.js";
+import projectRoutes from "./routes/projectRoutes.js";
 import contactRoutes from "./routes/contactRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
 import dotenv from "dotenv";
@@ -31,6 +32,7 @@ dbConnector();
 //routes
 app.use("/api/auth", authRoutes);
 app.use("/api/properties", propertyRoutes);
+app.use("/api/projects", projectRoutes);
 app.use("/api/contacts", contactRoutes);
  
 

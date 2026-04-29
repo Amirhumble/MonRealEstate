@@ -1,9 +1,10 @@
 // src/pages/AdminDashboard.jsx
 import React, { useState, useEffect } from "react";
-import { propertiesAPI, contactsAPI, authAPI } from "../services/api";
+import { propertiesAPI, projectsAPI, contactsAPI, authAPI } from "../services/api";
 
 const AdminDashboard = () => {
   const [allProperties, setAllProperties] = useState([]);
+  const [allProjects, setAllProjects] = useState([]);
   const [allContacts, setAllContacts] = useState([]);
   const [allAdmins, setAllAdmins] = useState([]);
   const [newProperty, setNewProperty] = useState({
@@ -11,8 +12,45 @@ const AdminDashboard = () => {
     location: "",
     price: "",
     type: "",
-    image: null, // file object
+    image: null,
+    images: [],
     description: "",
+    status: "For Sale",
+    bedrooms: "",
+    bathrooms: "",
+    area: "",
+    lotSize: "",
+    yearBuilt: "",
+    parking: "",
+    floors: "",
+    features: "",
+    amenities: "",
+    address: "",
+    city: "",
+    neighborhood: "",
+    zipCode: "",
+    floorPlans: [],
+    virtualTour: "",
+    videoUrl: "",
+    agentName: "",
+    agentEmail: "",
+    agentPhone: "",
+    agentPhoto: null,
+    featured: false
+  });
+  const [newProject, setNewProject] = useState({
+    name: "",
+    status: "Upcoming",
+    location: "",
+    description: "",
+    coverImage: null,
+    images: [],
+    units: "",
+    size: "",
+    amenities: "",
+    features: "",
+    timeline: "",
+    completionDate: "",
     featured: false
   });
   const [newAdmin, setNewAdmin] = useState({
@@ -23,18 +61,22 @@ const AdminDashboard = () => {
   const [editingAdmin, setEditingAdmin] = useState(null);
   const [successMessage, setSuccessMessage] = useState("");
   const [editingId, setEditingId] = useState(null);
+  const [editingProjectId, setEditingProjectId] = useState(null);
   const [activeTab, setActiveTab] = useState("properties");
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Load properties, contacts, and admins from backend
+  // Load properties, projects, contacts, and admins from backend
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [propertiesRes, contactsRes, adminsRes] = await Promise.all([
+        const [propertiesRes, projectsRes, contactsRes, adminsRes] = await Promise.all([
           propertiesAPI.getAll(),
+          projectsAPI.getAll(),
           contactsAPI.getAll(),
           authAPI.getAllAdmins()
         ]);
         setAllProperties(propertiesRes.data);
+        setAllProjects(projectsRes.data);
         setAllContacts(contactsRes.data);
         setAllAdmins(adminsRes.data);
       } catch (err) {
@@ -48,8 +90,10 @@ const AdminDashboard = () => {
     const { name, value, type, checked, files } = e.target;
     if (type === "checkbox") {
       setNewProperty({ ...newProperty, [name]: checked });
-    } else if (type === "file") {
+    } else if (name === "image" || name === "agentPhoto") {
       setNewProperty({ ...newProperty, [name]: files[0] });
+    } else if (name === "images" || name === "floorPlans") {
+      setNewProperty({ ...newProperty, [name]: Array.from(files) });
     } else {
       setNewProperty({ ...newProperty, [name]: value });
     }
@@ -57,12 +101,65 @@ const AdminDashboard = () => {
 
   const handleAddProperty = async (e) => {
     e.preventDefault();
+    
+    // Validate required fields
+    if (!newProperty.title || !newProperty.type || !newProperty.price || !newProperty.location || !newProperty.description) {
+      setSuccessMessage("❌ Please fill in all required fields (Title, Type, Price, Location, Description)");
+      setTimeout(() => setSuccessMessage(""), 5000);
+      return;
+    }
+    
+    if (!editingId && !newProperty.image) {
+      setSuccessMessage("❌ Please upload a main image for the property");
+      setTimeout(() => setSuccessMessage(""), 5000);
+      return;
+    }
+    
+    setIsLoading(true);
+    
     try {
       const formData = new FormData();
-      let keys = Object.keys(newProperty);
-      keys.forEach((key) => {
-        formData.append(key, newProperty[key]);
+      
+      // Append all text fields
+      Object.keys(newProperty).forEach((key) => {
+        if (key !== 'image' && key !== 'images' && key !== 'floorPlans' && key !== 'agentPhoto' && key !== 'features' && key !== 'amenities') {
+          if (newProperty[key] !== '' && newProperty[key] !== null && newProperty[key] !== undefined) {
+            formData.append(key, newProperty[key]);
+          }
+        }
       });
+
+      // Parse and append arrays
+      if (newProperty.features) {
+        const featuresArray = newProperty.features.split(",").map(f => f.trim()).filter(f => f);
+        if (featuresArray.length > 0) {
+          formData.append("features", JSON.stringify(featuresArray));
+        }
+      }
+      if (newProperty.amenities) {
+        const amenitiesArray = newProperty.amenities.split(",").map(a => a.trim()).filter(a => a);
+        if (amenitiesArray.length > 0) {
+          formData.append("amenities", JSON.stringify(amenitiesArray));
+        }
+      }
+
+      // Append files
+      if (newProperty.image) {
+        formData.append("image", newProperty.image);
+      }
+      if (newProperty.images && newProperty.images.length > 0) {
+        newProperty.images.forEach(img => {
+          formData.append("images", img);
+        });
+      }
+      if (newProperty.floorPlans && newProperty.floorPlans.length > 0) {
+        newProperty.floorPlans.forEach(plan => {
+          formData.append("floorPlans", plan);
+        });
+      }
+      if (newProperty.agentPhoto) {
+        formData.append("agentPhoto", newProperty.agentPhoto);
+      }
 
       let res;
       if (editingId) {
@@ -83,21 +180,78 @@ const AdminDashboard = () => {
         price: "",
         type: "",
         image: null,
+        images: [],
         description: "",
+        status: "For Sale",
+        bedrooms: "",
+        bathrooms: "",
+        area: "",
+        lotSize: "",
+        yearBuilt: "",
+        parking: "",
+        floors: "",
+        features: "",
+        amenities: "",
+        address: "",
+        city: "",
+        neighborhood: "",
+        zipCode: "",
+        floorPlans: [],
+        virtualTour: "",
+        videoUrl: "",
+        agentName: "",
+        agentEmail: "",
+        agentPhone: "",
+        agentPhoto: null,
         featured: false
       });
 
-      setTimeout(() => setSuccessMessage(""), 3000);
+      // Scroll to top to see success message
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      
+      setTimeout(() => setSuccessMessage(""), 5000);
     } catch (err) {
       console.error("Error saving property:", err);
+      const errorMessage = err.response?.data?.error || err.message || "Unknown error occurred";
+      setSuccessMessage(`❌ Failed to save property: ${errorMessage}`);
+      setTimeout(() => setSuccessMessage(""), 5000);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleEdit = (property) => {
     setEditingId(property._id);
     setNewProperty({
-      ...property,
-      image: null // reset file input, keep existing URL in DB
+      title: property.title || "",
+      location: property.location || "",
+      price: property.price || "",
+      type: property.type || "",
+      image: null,
+      images: [],
+      description: property.description || "",
+      status: property.status || "For Sale",
+      bedrooms: property.bedrooms || "",
+      bathrooms: property.bathrooms || "",
+      area: property.area || "",
+      lotSize: property.lotSize || "",
+      yearBuilt: property.yearBuilt || "",
+      parking: property.parking || "",
+      floors: property.floors || "",
+      features: property.features ? property.features.join(", ") : "",
+      amenities: property.amenities ? property.amenities.join(", ") : "",
+      address: property.address || "",
+      city: property.city || "",
+      neighborhood: property.neighborhood || "",
+      zipCode: property.zipCode || "",
+      floorPlans: [],
+      virtualTour: property.virtualTour || "",
+      videoUrl: property.videoUrl || "",
+      agentName: property.agentName || "",
+      agentEmail: property.agentEmail || "",
+      agentPhone: property.agentPhone || "",
+      agentPhoto: null,
+      featured: property.featured || false
     });
   };
 
@@ -172,6 +326,125 @@ const AdminDashboard = () => {
     }
   };
 
+  // Project handlers
+  const handleProjectChange = (e) => {
+    const { name, value, type, checked, files } = e.target;
+    if (type === "checkbox") {
+      setNewProject({ ...newProject, [name]: checked });
+    } else if (name === "coverImage") {
+      setNewProject({ ...newProject, [name]: files[0] });
+    } else if (name === "images") {
+      setNewProject({ ...newProject, [name]: Array.from(files) });
+    } else {
+      setNewProject({ ...newProject, [name]: value });
+    }
+  };
+
+  const handleAddProject = async (e) => {
+    e.preventDefault();
+    try {
+      const formData = new FormData();
+      
+      // Append simple fields
+      formData.append("name", newProject.name);
+      formData.append("status", newProject.status);
+      formData.append("location", newProject.location);
+      formData.append("description", newProject.description);
+      formData.append("featured", newProject.featured);
+      
+      if (newProject.units) formData.append("units", newProject.units);
+      if (newProject.size) formData.append("size", newProject.size);
+      if (newProject.timeline) formData.append("timeline", newProject.timeline);
+      if (newProject.completionDate) formData.append("completionDate", newProject.completionDate);
+      
+      // Parse and append arrays
+      if (newProject.amenities) {
+        const amenitiesArray = newProject.amenities.split(",").map(a => a.trim()).filter(a => a);
+        formData.append("amenities", JSON.stringify(amenitiesArray));
+      }
+      if (newProject.features) {
+        const featuresArray = newProject.features.split(",").map(f => f.trim()).filter(f => f);
+        formData.append("features", JSON.stringify(featuresArray));
+      }
+      
+      // Append files
+      if (newProject.coverImage) {
+        formData.append("coverImage", newProject.coverImage);
+      }
+      if (newProject.images && newProject.images.length > 0) {
+        newProject.images.forEach(img => {
+          formData.append("images", img);
+        });
+      }
+
+      let res;
+      if (editingProjectId) {
+        res = await projectsAPI.update(editingProjectId, formData, true);
+        setAllProjects(allProjects.map((p) => (p._id === editingProjectId ? res.data : p)));
+        setEditingProjectId(null);
+        setSuccessMessage("✅ Project updated successfully!");
+      } else {
+        res = await projectsAPI.create(formData, true);
+        setAllProjects([...allProjects, res.data]);
+        setSuccessMessage("✅ Project added successfully!");
+      }
+
+      // Reset form
+      setNewProject({
+        name: "",
+        status: "Upcoming",
+        location: "",
+        description: "",
+        coverImage: null,
+        images: [],
+        units: "",
+        size: "",
+        amenities: "",
+        features: "",
+        timeline: "",
+        completionDate: "",
+        featured: false
+      });
+
+      setTimeout(() => setSuccessMessage(""), 3000);
+    } catch (err) {
+      console.error("Error saving project:", err);
+      setSuccessMessage("❌ Failed to save project. Please try again.");
+      setTimeout(() => setSuccessMessage(""), 3000);
+    }
+  };
+
+  const handleEditProject = (project) => {
+    setEditingProjectId(project._id);
+    setNewProject({
+      name: project.name,
+      status: project.status,
+      location: project.location,
+      description: project.description,
+      coverImage: null,
+      images: [],
+      units: project.units || "",
+      size: project.size || "",
+      amenities: project.amenities ? project.amenities.join(", ") : "",
+      features: project.features ? project.features.join(", ") : "",
+      timeline: project.timeline || "",
+      completionDate: project.completionDate || "",
+      featured: project.featured
+    });
+  };
+
+  const handleDeleteProject = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this project?")) return;
+    try {
+      await projectsAPI.delete(id);
+      setAllProjects(allProjects.filter((p) => p._id !== id));
+      setSuccessMessage("❌ Project deleted successfully!");
+      setTimeout(() => setSuccessMessage(""), 3000);
+    } catch (err) {
+      console.error("Error deleting project:", err);
+    }
+  };
+
   return (
     <div className="min-h-screen" style={{ backgroundColor: "#e8e8e8" }}>
       <div className="container mx-auto p-6">
@@ -180,16 +453,35 @@ const AdminDashboard = () => {
         </h1>
 
         {successMessage && (
-          <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-6">
-            {successMessage}
+          <div className={`px-6 py-4 rounded-lg mb-6 border-l-4 ${
+            successMessage.includes('✅') 
+              ? 'bg-green-50 border-green-400 text-green-800' 
+              : 'bg-red-50 border-red-400 text-red-800'
+          }`}>
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                {successMessage.includes('✅') ? (
+                  <svg className="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                ) : (
+                  <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                  </svg>
+                )}
+              </div>
+              <div className="ml-3">
+                <p className="text-sm font-medium">{successMessage}</p>
+              </div>
+            </div>
           </div>
         )}
 
         {/* Tabs */}
-        <div className="flex justify-center mb-8">
+        <div className="flex justify-center mb-8 flex-wrap gap-2">
           <button
             onClick={() => setActiveTab("properties")}
-            className={`px-6 py-3 rounded-l-lg font-semibold transition ${
+            className={`px-6 py-3 rounded-lg font-semibold transition ${
               activeTab === "properties"
                 ? "bg-[#2c2863] text-white"
                 : "bg-white text-[#2c2863] border border-[#2c2863]"
@@ -198,8 +490,18 @@ const AdminDashboard = () => {
             Properties
           </button>
           <button
+            onClick={() => setActiveTab("projects")}
+            className={`px-6 py-3 rounded-lg font-semibold transition ${
+              activeTab === "projects"
+                ? "bg-[#2c2863] text-white"
+                : "bg-white text-[#2c2863] border border-[#2c2863]"
+            }`}
+          >
+            Projects
+          </button>
+          <button
             onClick={() => setActiveTab("contacts")}
-            className={`px-6 py-3 font-semibold transition ${
+            className={`px-6 py-3 rounded-lg font-semibold transition ${
               activeTab === "contacts"
                 ? "bg-[#2c2863] text-white"
                 : "bg-white text-[#2c2863] border border-[#2c2863]"
@@ -209,7 +511,7 @@ const AdminDashboard = () => {
           </button>
           <button
             onClick={() => setActiveTab("admins")}
-            className={`px-6 py-3 rounded-r-lg font-semibold transition ${
+            className={`px-6 py-3 rounded-lg font-semibold transition ${
               activeTab === "admins"
                 ? "bg-[#2c2863] text-white"
                 : "bg-white text-[#2c2863] border border-[#2c2863]"
@@ -227,33 +529,21 @@ const AdminDashboard = () => {
                 {editingId ? "Edit Property" : "Add New Property"}
               </h2>
               <form onSubmit={handleAddProperty} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Basic Information */}
+                <div className="md:col-span-2">
+                  <h3 className="text-lg font-semibold text-gray-700 mb-3">Basic Information</h3>
+                </div>
+                
                 <input
                   type="text"
                   name="title"
-                  placeholder="Title"
+                  placeholder="Property Title *"
                   value={newProperty.title}
                   onChange={handleChange}
                   className="border border-gray-300 p-3 rounded focus:outline-none focus:ring-2 focus:ring-[#e81d2b]"
                   required
                 />
-                <input
-                  type="text"
-                  name="location"
-                  placeholder="Location"
-                  value={newProperty.location}
-                  onChange={handleChange}
-                  className="border border-gray-300 p-3 rounded focus:outline-none focus:ring-2 focus:ring-[#e81d2b]"
-                  required
-                />
-                <input
-                  type="number"
-                  name="price"
-                  placeholder="Price"
-                  value={newProperty.price}
-                  onChange={handleChange}
-                  className="border border-gray-300 p-3 rounded focus:outline-none focus:ring-2 focus:ring-[#e81d2b]"
-                  required
-                />
+                
                 <select
                   name="type"
                   value={newProperty.type}
@@ -261,71 +551,380 @@ const AdminDashboard = () => {
                   className="border border-gray-300 p-3 rounded focus:outline-none focus:ring-2 focus:ring-[#e81d2b]"
                   required
                 >
-                  <option value="">Select Type</option>
+                  <option value="">Select Type *</option>
                   <option value="Villa">Villa</option>
                   <option value="Apartment">Apartment</option>
-                  <option value="Cottage">Cottage</option>
+                  <option value="House">House</option>
+                  <option value="Studio">Studio</option>
+                  <option value="Penthouse">Penthouse</option>
                 </select>
-                <div className="md:col-span-2">
-                  <label
-                    htmlFor="image"
-                    className="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-lg p-6 cursor-pointer hover:border-[#e81d2b] transition"
-                  >
-                    <svg
-                      className="w-12 h-12 text-gray-400 mb-2"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M7 16V4m0 0l-4 4m4-4l4 4M17 8v12m0 0l-4-4m4 4l4-4"
-                      />
-                    </svg>
-                    <span className="text-gray-600">Click to upload image</span>
-                    {newProperty.image && (
-                      <span className="mt-2 text-sm text-green-600">
-                        {newProperty.image.name}
-                      </span>
-                    )}
-                  </label>
-                  <input
-                    id="image"
-                    type="file"
-                    name="image"
-                    accept="image/*"
-                    onChange={handleChange}
-                    className="hidden"
-                    required={!editingId}
-                  />
-                </div>
+                
+                <input
+                  type="number"
+                  name="price"
+                  placeholder="Price *"
+                  value={newProperty.price}
+                  onChange={handleChange}
+                  className="border border-gray-300 p-3 rounded focus:outline-none focus:ring-2 focus:ring-[#e81d2b]"
+                  required
+                />
+                
+                <select
+                  name="status"
+                  value={newProperty.status}
+                  onChange={handleChange}
+                  className="border border-gray-300 p-3 rounded focus:outline-none focus:ring-2 focus:ring-[#e81d2b]"
+                >
+                  <option value="For Sale">For Sale</option>
+                  <option value="For Rent">For Rent</option>
+                  <option value="Sold">Sold</option>
+                  <option value="Pending">Pending</option>
+                </select>
+                
                 <textarea
                   name="description"
-                  placeholder="Description"
+                  placeholder="Property Description *"
                   value={newProperty.description}
                   onChange={handleChange}
                   className="border border-gray-300 p-3 rounded focus:outline-none focus:ring-2 focus:ring-[#e81d2b] md:col-span-2"
                   rows="4"
                   required
                 />
-                <label className="flex items-center gap-2 md:col-span-2">
+                
+                {/* Property Details */}
+                <div className="md:col-span-2 mt-4">
+                  <h3 className="text-lg font-semibold text-gray-700 mb-3">Property Details</h3>
+                </div>
+                
+                <input
+                  type="number"
+                  name="bedrooms"
+                  placeholder="Bedrooms"
+                  value={newProperty.bedrooms}
+                  onChange={handleChange}
+                  className="border border-gray-300 p-3 rounded focus:outline-none focus:ring-2 focus:ring-[#e81d2b]"
+                />
+                
+                <input
+                  type="number"
+                  name="bathrooms"
+                  placeholder="Bathrooms"
+                  value={newProperty.bathrooms}
+                  onChange={handleChange}
+                  className="border border-gray-300 p-3 rounded focus:outline-none focus:ring-2 focus:ring-[#e81d2b]"
+                />
+                
+                <input
+                  type="number"
+                  name="area"
+                  placeholder="Area (sq ft)"
+                  value={newProperty.area}
+                  onChange={handleChange}
+                  className="border border-gray-300 p-3 rounded focus:outline-none focus:ring-2 focus:ring-[#e81d2b]"
+                />
+                
+                <input
+                  type="text"
+                  name="lotSize"
+                  placeholder="Lot Size (e.g., 5000 sq ft)"
+                  value={newProperty.lotSize}
+                  onChange={handleChange}
+                  className="border border-gray-300 p-3 rounded focus:outline-none focus:ring-2 focus:ring-[#e81d2b]"
+                />
+                
+                <input
+                  type="number"
+                  name="yearBuilt"
+                  placeholder="Year Built"
+                  value={newProperty.yearBuilt}
+                  onChange={handleChange}
+                  className="border border-gray-300 p-3 rounded focus:outline-none focus:ring-2 focus:ring-[#e81d2b]"
+                />
+                
+                <input
+                  type="number"
+                  name="parking"
+                  placeholder="Parking Spaces"
+                  value={newProperty.parking}
+                  onChange={handleChange}
+                  className="border border-gray-300 p-3 rounded focus:outline-none focus:ring-2 focus:ring-[#e81d2b]"
+                />
+                
+                <input
+                  type="number"
+                  name="floors"
+                  placeholder="Number of Floors"
+                  value={newProperty.floors}
+                  onChange={handleChange}
+                  className="border border-gray-300 p-3 rounded focus:outline-none focus:ring-2 focus:ring-[#e81d2b]"
+                />
+                
+                {/* Location Details */}
+                <div className="md:col-span-2 mt-4">
+                  <h3 className="text-lg font-semibold text-gray-700 mb-3">Location Details</h3>
+                </div>
+                
+                <input
+                  type="text"
+                  name="location"
+                  placeholder="Location/City *"
+                  value={newProperty.location}
+                  onChange={handleChange}
+                  className="border border-gray-300 p-3 rounded focus:outline-none focus:ring-2 focus:ring-[#e81d2b]"
+                  required
+                />
+                
+                <input
+                  type="text"
+                  name="address"
+                  placeholder="Street Address"
+                  value={newProperty.address}
+                  onChange={handleChange}
+                  className="border border-gray-300 p-3 rounded focus:outline-none focus:ring-2 focus:ring-[#e81d2b]"
+                />
+                
+                <input
+                  type="text"
+                  name="neighborhood"
+                  placeholder="Neighborhood"
+                  value={newProperty.neighborhood}
+                  onChange={handleChange}
+                  className="border border-gray-300 p-3 rounded focus:outline-none focus:ring-2 focus:ring-[#e81d2b]"
+                />
+                
+                <input
+                  type="text"
+                  name="zipCode"
+                  placeholder="Zip Code"
+                  value={newProperty.zipCode}
+                  onChange={handleChange}
+                  className="border border-gray-300 p-3 rounded focus:outline-none focus:ring-2 focus:ring-[#e81d2b]"
+                />
+                
+                {/* Features & Amenities */}
+                <div className="md:col-span-2 mt-4">
+                  <h3 className="text-lg font-semibold text-gray-700 mb-3">Features & Amenities</h3>
+                </div>
+                
+                <div className="md:col-span-2">
                   <input
-                    type="checkbox"
-                    name="featured"
-                    checked={newProperty.featured}
+                    type="text"
+                    name="features"
+                    placeholder="Features (comma-separated, e.g., Hardwood Floors, Fireplace, Walk-in Closet)"
+                    value={newProperty.features}
                     onChange={handleChange}
-                    className="w-4 h-4 text-[#e81d2b] focus:ring-[#e81d2b]"
+                    className="w-full border border-gray-300 p-3 rounded focus:outline-none focus:ring-2 focus:ring-[#e81d2b]"
                   />
-                  Featured Property
-                </label>
-                <button
-                  type="submit"
-                  className="bg-[#e81d2b] text-white px-6 py-3 rounded hover:bg-red-700 transition md:col-span-2 font-semibold"
-                >
-                  {editingId ? "Update Property" : "Add Property"}
-                </button>
+                  <p className="text-xs text-gray-500 mt-1">Interior features of the property</p>
+                </div>
+                
+                <div className="md:col-span-2">
+                  <input
+                    type="text"
+                    name="amenities"
+                    placeholder="Amenities (comma-separated, e.g., Pool, Gym, Security, Garden)"
+                    value={newProperty.amenities}
+                    onChange={handleChange}
+                    className="w-full border border-gray-300 p-3 rounded focus:outline-none focus:ring-2 focus:ring-[#e81d2b]"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Building/community amenities</p>
+                </div>
+                
+                {/* Images */}
+                <div className="md:col-span-2 mt-4">
+                  <h3 className="text-lg font-semibold text-gray-700 mb-3">Images</h3>
+                </div>
+                
+                <div className="md:col-span-2">
+                  <label className="block mb-2 text-sm font-medium text-gray-700">
+                    Main Image *
+                  </label>
+                  <input
+                    type="file"
+                    name="image"
+                    accept="image/*"
+                    onChange={handleChange}
+                    className="w-full border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-[#e81d2b]"
+                    required={!editingId}
+                  />
+                </div>
+                
+                <div className="md:col-span-2">
+                  <label className="block mb-2 text-sm font-medium text-gray-700">
+                    Additional Images (up to 10)
+                  </label>
+                  <input
+                    type="file"
+                    name="images"
+                    accept="image/*"
+                    multiple
+                    onChange={handleChange}
+                    className="w-full border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-[#e81d2b]"
+                  />
+                </div>
+                
+                <div className="md:col-span-2">
+                  <label className="block mb-2 text-sm font-medium text-gray-700">
+                    Floor Plans (up to 5)
+                  </label>
+                  <input
+                    type="file"
+                    name="floorPlans"
+                    accept="image/*"
+                    multiple
+                    onChange={handleChange}
+                    className="w-full border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-[#e81d2b]"
+                  />
+                </div>
+                
+                {/* Media Links */}
+                <div className="md:col-span-2 mt-4">
+                  <h3 className="text-lg font-semibold text-gray-700 mb-3">Media Links</h3>
+                </div>
+                
+                <input
+                  type="url"
+                  name="virtualTour"
+                  placeholder="Virtual Tour URL"
+                  value={newProperty.virtualTour}
+                  onChange={handleChange}
+                  className="border border-gray-300 p-3 rounded focus:outline-none focus:ring-2 focus:ring-[#e81d2b] md:col-span-2"
+                />
+                
+                <input
+                  type="url"
+                  name="videoUrl"
+                  placeholder="Video URL"
+                  value={newProperty.videoUrl}
+                  onChange={handleChange}
+                  className="border border-gray-300 p-3 rounded focus:outline-none focus:ring-2 focus:ring-[#e81d2b] md:col-span-2"
+                />
+                
+                {/* Agent Information */}
+                <div className="md:col-span-2 mt-4">
+                  <h3 className="text-lg font-semibold text-gray-700 mb-3">Agent Information</h3>
+                </div>
+                
+                <input
+                  type="text"
+                  name="agentName"
+                  placeholder="Agent Name"
+                  value={newProperty.agentName}
+                  onChange={handleChange}
+                  className="border border-gray-300 p-3 rounded focus:outline-none focus:ring-2 focus:ring-[#e81d2b]"
+                />
+                
+                <input
+                  type="email"
+                  name="agentEmail"
+                  placeholder="Agent Email"
+                  value={newProperty.agentEmail}
+                  onChange={handleChange}
+                  className="border border-gray-300 p-3 rounded focus:outline-none focus:ring-2 focus:ring-[#e81d2b]"
+                />
+                
+                <input
+                  type="tel"
+                  name="agentPhone"
+                  placeholder="Agent Phone"
+                  value={newProperty.agentPhone}
+                  onChange={handleChange}
+                  className="border border-gray-300 p-3 rounded focus:outline-none focus:ring-2 focus:ring-[#e81d2b]"
+                />
+                
+                <div>
+                  <label className="block mb-2 text-sm font-medium text-gray-700">
+                    Agent Photo
+                  </label>
+                  <input
+                    type="file"
+                    name="agentPhoto"
+                    accept="image/*"
+                    onChange={handleChange}
+                    className="w-full border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-[#e81d2b]"
+                  />
+                </div>
+                
+                {/* Featured */}
+                <div className="md:col-span-2 mt-4">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      name="featured"
+                      checked={newProperty.featured}
+                      onChange={handleChange}
+                      className="w-5 h-5 text-[#e81d2b] focus:ring-[#e81d2b]"
+                    />
+                    <span className="text-gray-700 font-medium">Featured Property</span>
+                  </label>
+                </div>
+                
+                {/* Submit Button */}
+                <div className="md:col-span-2 flex gap-4 mt-6">
+                  <button
+                    type="submit"
+                    disabled={isLoading}
+                    className={`flex-1 text-white px-6 py-3 rounded-lg transition font-semibold ${
+                      isLoading 
+                        ? "bg-gray-400 cursor-not-allowed" 
+                        : "bg-[#e81d2b] hover:bg-red-700"
+                    }`}
+                  >
+                    {isLoading ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
+                        </svg>
+                        {editingId ? "Updating..." : "Adding..."}
+                      </span>
+                    ) : (
+                      editingId ? "Update Property" : "Add Property"
+                    )}
+                  </button>
+                  {editingId && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditingId(null);
+                        setNewProperty({
+                          title: "",
+                          location: "",
+                          price: "",
+                          type: "",
+                          image: null,
+                          images: [],
+                          description: "",
+                          status: "For Sale",
+                          bedrooms: "",
+                          bathrooms: "",
+                          area: "",
+                          lotSize: "",
+                          yearBuilt: "",
+                          parking: "",
+                          floors: "",
+                          features: "",
+                          amenities: "",
+                          address: "",
+                          city: "",
+                          neighborhood: "",
+                          zipCode: "",
+                          floorPlans: [],
+                          virtualTour: "",
+                          videoUrl: "",
+                          agentName: "",
+                          agentEmail: "",
+                          agentPhone: "",
+                          agentPhoto: null,
+                          featured: false
+                        });
+                      }}
+                      className="px-6 bg-gray-500 text-white py-3 rounded-lg hover:bg-gray-600 transition font-semibold"
+                    >
+                      Cancel
+                    </button>
+                  )}
+                </div>
               </form>
             </div>
 
@@ -370,6 +969,241 @@ const AdminDashboard = () => {
                       >
                         Delete
                       </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+
+        {activeTab === "projects" && (
+          <>
+            {/* Add/Edit Project Form */}
+            <div className="bg-white p-6 rounded-lg shadow-md mb-10">
+              <h2 className="text-2xl font-semibold mb-4" style={{ color: "#2c2863" }}>
+                {editingProjectId ? "Edit Project" : "Add New Project"}
+              </h2>
+              <form onSubmit={handleAddProject} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <input
+                  type="text"
+                  name="name"
+                  placeholder="Project Name"
+                  value={newProject.name}
+                  onChange={handleProjectChange}
+                  className="border border-gray-300 p-3 rounded focus:outline-none focus:ring-2 focus:ring-[#e81d2b]"
+                  required
+                />
+                <select
+                  name="status"
+                  value={newProject.status}
+                  onChange={handleProjectChange}
+                  className="border border-gray-300 p-3 rounded focus:outline-none focus:ring-2 focus:ring-[#e81d2b]"
+                  required
+                >
+                  <option value="Upcoming">Upcoming</option>
+                  <option value="In Progress">In Progress</option>
+                  <option value="Completed">Completed</option>
+                </select>
+                <input
+                  type="text"
+                  name="location"
+                  placeholder="Location"
+                  value={newProject.location}
+                  onChange={handleProjectChange}
+                  className="border border-gray-300 p-3 rounded focus:outline-none focus:ring-2 focus:ring-[#e81d2b]"
+                  required
+                />
+                <input
+                  type="number"
+                  name="units"
+                  placeholder="Number of Units (optional)"
+                  value={newProject.units}
+                  onChange={handleProjectChange}
+                  className="border border-gray-300 p-3 rounded focus:outline-none focus:ring-2 focus:ring-[#e81d2b]"
+                />
+                <input
+                  type="text"
+                  name="size"
+                  placeholder="Size (e.g., 50,000 sq ft)"
+                  value={newProject.size}
+                  onChange={handleProjectChange}
+                  className="border border-gray-300 p-3 rounded focus:outline-none focus:ring-2 focus:ring-[#e81d2b]"
+                />
+                <input
+                  type="text"
+                  name="timeline"
+                  placeholder="Timeline (e.g., 2024-2026)"
+                  value={newProject.timeline}
+                  onChange={handleProjectChange}
+                  className="border border-gray-300 p-3 rounded focus:outline-none focus:ring-2 focus:ring-[#e81d2b]"
+                />
+                <input
+                  type="text"
+                  name="completionDate"
+                  placeholder="Completion Date"
+                  value={newProject.completionDate}
+                  onChange={handleProjectChange}
+                  className="border border-gray-300 p-3 rounded focus:outline-none focus:ring-2 focus:ring-[#e81d2b]"
+                />
+                <div className="md:col-span-2">
+                  <textarea
+                    name="description"
+                    placeholder="Project Description"
+                    value={newProject.description}
+                    onChange={handleProjectChange}
+                    rows="4"
+                    className="w-full border border-gray-300 p-3 rounded focus:outline-none focus:ring-2 focus:ring-[#e81d2b]"
+                    required
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <input
+                    type="text"
+                    name="amenities"
+                    placeholder="Amenities (comma-separated)"
+                    value={newProject.amenities}
+                    onChange={handleProjectChange}
+                    className="w-full border border-gray-300 p-3 rounded focus:outline-none focus:ring-2 focus:ring-[#e81d2b]"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Example: Swimming Pool, Gym, Parking, Security</p>
+                </div>
+                <div className="md:col-span-2">
+                  <input
+                    type="text"
+                    name="features"
+                    placeholder="Features (comma-separated)"
+                    value={newProject.features}
+                    onChange={handleProjectChange}
+                    className="w-full border border-gray-300 p-3 rounded focus:outline-none focus:ring-2 focus:ring-[#e81d2b]"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Example: Smart Home, Solar Panels, Green Building</p>
+                </div>
+                <div className="md:col-span-2">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      name="featured"
+                      checked={newProject.featured}
+                      onChange={handleProjectChange}
+                      className="w-5 h-5 text-[#e81d2b] focus:ring-[#e81d2b]"
+                    />
+                    <span className="text-gray-700 font-medium">Featured Project</span>
+                  </label>
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block mb-2 text-sm font-medium text-gray-700">
+                    Cover Image *
+                  </label>
+                  <input
+                    type="file"
+                    name="coverImage"
+                    accept="image/*"
+                    onChange={handleProjectChange}
+                    className="w-full border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-[#e81d2b]"
+                    required={!editingProjectId}
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block mb-2 text-sm font-medium text-gray-700">
+                    Additional Images (up to 10)
+                  </label>
+                  <input
+                    type="file"
+                    name="images"
+                    accept="image/*"
+                    multiple
+                    onChange={handleProjectChange}
+                    className="w-full border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-[#e81d2b]"
+                  />
+                </div>
+                <div className="md:col-span-2 flex gap-4">
+                  <button
+                    type="submit"
+                    className="flex-1 bg-[#e81d2b] text-white py-3 rounded-lg font-semibold hover:bg-red-700 transition"
+                  >
+                    {editingProjectId ? "Update Project" : "Add Project"}
+                  </button>
+                  {editingProjectId && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditingProjectId(null);
+                        setNewProject({
+                          name: "",
+                          status: "Upcoming",
+                          location: "",
+                          description: "",
+                          coverImage: null,
+                          images: [],
+                          units: "",
+                          size: "",
+                          amenities: "",
+                          features: "",
+                          timeline: "",
+                          completionDate: "",
+                          featured: false
+                        });
+                      }}
+                      className="px-6 bg-gray-500 text-white py-3 rounded-lg font-semibold hover:bg-gray-600 transition"
+                    >
+                      Cancel
+                    </button>
+                  )}
+                </div>
+              </form>
+            </div>
+
+            {/* Projects List */}
+            <div className="bg-white p-6 rounded-lg shadow-md">
+              <h2 className="text-2xl font-semibold mb-6" style={{ color: "#2c2863" }}>
+                All Projects ({allProjects.length})
+              </h2>
+              {allProjects.map((project) => (
+                <div
+                  key={project._id}
+                  className="border border-gray-200 p-4 rounded-lg mb-4 hover:shadow-lg transition"
+                >
+                  <div className="flex flex-col md:flex-row gap-4">
+                    <img
+                      src={project.coverImage}
+                      alt={project.name}
+                      className="w-full md:w-48 h-32 object-cover rounded-lg"
+                    />
+                    <div className="flex-1">
+                      <div className="flex items-start justify-between mb-2">
+                        <div>
+                          <h3 className="text-xl font-bold text-[#2c2863]">{project.name}</h3>
+                          <p className="text-gray-600">{project.location}</p>
+                        </div>
+                        <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+                          project.status === "Completed" ? "bg-green-100 text-green-700" :
+                          project.status === "In Progress" ? "bg-blue-100 text-blue-700" :
+                          "bg-orange-100 text-orange-700"
+                        }`}>
+                          {project.status}
+                        </span>
+                      </div>
+                      <p className="text-gray-700 text-sm mb-2 line-clamp-2">{project.description}</p>
+                      <div className="flex flex-wrap gap-2 text-sm text-gray-600 mb-3">
+                        {project.units && <span>🏢 {project.units} Units</span>}
+                        {project.size && <span>📏 {project.size}</span>}
+                        {project.featured && <span className="text-[#e81d2b] font-semibold">⭐ Featured</span>}
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => handleEditProject(project)}
+                          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition text-sm"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleDeleteProject(project._id)}
+                          className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition text-sm"
+                        >
+                          Delete
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>

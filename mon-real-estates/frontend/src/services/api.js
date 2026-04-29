@@ -38,6 +38,12 @@ export const authAPI = {
   login: (credentials) => api.post('/auth/login', credentials),
   register: (userData) => api.post('/auth/register', userData),
   getProfile: () => api.get('/auth/profile'),
+  updateProfile: (profileData, isFormData = false) => {
+    const config = isFormData ? { headers: { 'Content-Type': 'multipart/form-data' } } : {};
+    return api.put('/auth/update-profile', profileData, config);
+  },
+  toggleSavedProperty: (propertyId) => api.post(`/auth/toggle-saved/${propertyId}`),
+  getSavedProperties: () => api.get('/auth/saved-properties'),
   createAdmin: (adminData) => api.post('/auth/create-admin', adminData),
   getAllAdmins: () => api.get('/auth/admins'),
   updateAdmin: (id, adminData) => api.put(`/auth/admins/${id}`, adminData),
@@ -67,6 +73,23 @@ export const contactsAPI = {
   create: (contactData) => api.post('/contacts', contactData),
   update: (id, contactData) => api.put(`/contacts/${id}`, contactData),
   delete: (id) => api.delete(`/contacts/${id}`),
+};
+
+// Projects API methods
+export const projectsAPI = {
+  getAll: () => api.get('/projects'),
+  getById: (id) => api.get(`/projects/${id}`),
+  getFeatured: () => api.get('/projects/featured'),
+  getByStatus: (status) => api.get(`/projects/status/${status}`),
+  create: (projectData, isFormData = false) => {
+    const config = isFormData ? { headers: { 'Content-Type': 'multipart/form-data' } } : {};
+    return api.post('/projects', projectData, config);
+  },
+  update: (id, projectData, isFormData = false) => {
+    const config = isFormData ? { headers: { 'Content-Type': 'multipart/form-data' } } : {};
+    return api.put(`/projects/${id}`, projectData, config);
+  },
+  delete: (id) => api.delete(`/projects/${id}`),
 };
 
 export default api;
