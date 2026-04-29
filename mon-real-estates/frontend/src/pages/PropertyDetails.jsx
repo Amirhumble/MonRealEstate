@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
-import { propertiesAPI } from "../services/api";
+import { useParams, Link, useNavigate } from "react-router-dom";
+import { propertiesAPI, authAPI } from "../services/api";
+import { useAuth } from "../context/AuthContext";
 import { 
   MdLocationOn, 
   MdBed, 
@@ -17,10 +18,13 @@ import {
   MdChevronLeft,
   MdChevronRight
 } from "react-icons/md";
+import { HiOutlineHeart, HiHeart } from "react-icons/hi";
 import PropertyCard from "../components/PropertyCard";
 
 const PropertyDetails = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
+  const { isAuthenticated, user } = useAuth();
   const [property, setProperty] = useState(null);
   const [relatedProperties, setRelatedProperties] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -29,6 +33,8 @@ const PropertyDetails = () => {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
   const [showContactForm, setShowContactForm] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
+  const [saveLoading, setSaveLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -49,6 +55,11 @@ const PropertyDetails = () => {
           setProperty(foundProperty);
           setSelectedImage(foundProperty.image);
           
+          // Check if property is saved by current user
+          if (isAuthenticated && user?.savedProperties) {
+            setIsSaved(user.savedProperties.includes(foundProperty._id));
+          }
+          
           // Get related properties (same type, different id)
           const related = allPropertiesRes.data
             .filter(p => p.type === foundProperty.type && p._id !== id)
@@ -64,7 +75,53 @@ const PropertyDetails = () => {
       }
     };
     fetchData();
-  }, [id]);
+  }, [id, isAuthenticated, user]);
+
+  const handleSaveToggle = async () => {
+    if (!isAuthenticated) {
+      navigate('/login');
+      return;
+    }
+
+    setSaveLoading(true);
+    try {
+      const response = await authAPI.toggleSavedProperty(property._id);
+      setIsSaved(response.data.saved);
+      
+      // Update user data in localStorage
+      const currentUser = JSON.parse(localStorage.getItem('user'));
+      if (currentUser) {
+        if (response.data.saved) {
+          currentUser.savedProperties = [...(currentUser.savedProperties || []), property._id];
+        } else {
+          currentUser.savedProperties = (currentUser.savedProperties || []).filter(id => id !== property._id);
+        }
+        localStorage.setItem('user', JSON.stringify(currentUser));
+      }
+
+      // Show success message
+      const message = response.data.saved ? 'Property saved!' : 'Property removed from saved';
+      showToast(message, response.data.saved ? 'success' : 'info');
+    } catch (error) {
+      console.error('Error toggling saved property:', error);
+      showToast('Failed to save property', 'error');
+    } finally {
+      setSaveLoading(false);
+    }
+  };
+
+  const showToast = (message, type) => {
+    const toast = document.createElement('div');
+    const bgColor = type === 'success' ? 'bg-green-500' : type === 'error' ? 'bg-red-500' : 'bg-blue-500';
+    toast.className = `fixed top-24 right-4 ${bgColor} text-white px-6 py-3 rounded-lg shadow-lg z-50 transition-all duration-300`;
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+      toast.style.opacity = '0';
+      setTimeout(() => document.body.removeChild(toast), 300);
+    }, 2000);
+  };
 
   const handleFormChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -214,8 +271,23 @@ const PropertyDetails = () => {
                 <button className="bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white font-semibold py-4 px-6 rounded-full transition-all duration-300 border border-white/20">
                   <MdShare className="text-xl" />
                 </button>
-                <button className="bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white font-semibold py-4 px-6 rounded-full transition-all duration-300 border border-white/20">
-                  <MdFavorite className="text-xl" />
+                <button
+                  onClick={handleSaveToggle}
+                  disabled={saveLoading}
+                  className={`backdrop-blur-sm font-semibold py-4 px-6 rounded-full transition-all duration-300 border ${
+                    isSaved 
+                      ? 'bg-[#e81d2b] hover:bg-red-700 text-white border-[#e81d2b]' 
+                      : 'bg-white/10 hover:bg-white/20 text-white border-white/20'
+                  } ${saveLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  title={isSaved ? 'Remove from saved' : 'Save property'}
+                >
+                  {saveLoading ? (
+                    <div className="animate-spin h-5 w-5 border-2 border-current border-t-transparent rounded-full"></div>
+                  ) : isSaved ? (
+                    <HiHeart className="text-xl" />
+                  ) : (
+                    <HiOutlineHeart className="text-xl" />
+                  )}
                 </button>
               </div>
             </div>

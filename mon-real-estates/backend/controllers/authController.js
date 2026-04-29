@@ -6,6 +6,7 @@ const safeUser = (user) => ({
   id: user._id,
   name: user.name,
   email: user.email,
+  phone: user.phone,
   role: user.role,
   profilePicture: user.profilePicture,
   savedProperties: user.savedProperties,
@@ -13,12 +14,26 @@ const safeUser = (user) => ({
 
 export const updateProfile = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, phone, password, currentPassword } = req.body;
     const user = await User.findById(req.user._id);
+
+    // If updating password, verify current password first
+    if (password) {
+      if (!currentPassword) {
+        return res.status(400).json({ message: "Current password is required to update password." });
+      }
+      
+      const isCurrentPasswordValid = await user.comparePassword(currentPassword);
+      if (!isCurrentPasswordValid) {
+        return res.status(400).json({ message: "Current password is incorrect." });
+      }
+      
+      user.password = password; // Pre-save hook will hash it
+    }
 
     if (name) user.name = name;
     if (email) user.email = email;
-    if (password) user.password = password; // Pre-save hook will hash it
+    if (phone !== undefined) user.phone = phone; // Allow empty string to clear phone
 
     if (req.file) {
       const result = await cloudinary.uploader.upload(req.file.path, {

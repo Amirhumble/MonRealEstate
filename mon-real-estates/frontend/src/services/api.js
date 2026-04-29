@@ -38,6 +38,12 @@ export const authAPI = {
   login: (credentials) => api.post('/auth/login', credentials),
   register: (userData) => api.post('/auth/register', userData),
   getProfile: () => api.get('/auth/profile'),
+  updateProfile: (profileData, isFormData = false) => {
+    const config = isFormData ? { headers: { 'Content-Type': 'multipart/form-data' } } : {};
+    return api.put('/auth/update-profile', profileData, config);
+  },
+  toggleSavedProperty: (propertyId) => api.post(`/auth/toggle-saved/${propertyId}`),
+  getSavedProperties: () => api.get('/auth/saved-properties'),
   createAdmin: (adminData) => api.post('/auth/create-admin', adminData),
   getAllAdmins: () => api.get('/auth/admins'),
   updateAdmin: (id, adminData) => api.put(`/auth/admins/${id}`, adminData),

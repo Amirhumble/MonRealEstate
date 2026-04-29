@@ -9,15 +9,13 @@ import Contact from "./pages/Contact";
 import AdminDashboard from "./pages/AdminDashboard";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import Profile from "./pages/Profile";
+import SavedProperties from "./pages/SavedProperties";
 import Unauthorized from "./pages/Unauthorized";
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import ProtectedRoute from './components/ProtectedRoute';
 import { AuthProvider } from './context/AuthContext';
-
-// Placeholder components for new routes
-const Profile = () => <div className="min-h-screen pt-24 px-4 max-w-7xl mx-auto"><h1>Manage Profile</h1><p>Coming Soon...</p></div>;
-const SavedProperties = () => <div className="min-h-screen pt-24 px-4 max-w-7xl mx-auto"><h1>Saved Properties</h1><p>Coming Soon...</p></div>;
 
 function App() {
   return (
