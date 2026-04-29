@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { HiOutlineUserCircle, HiOutlineChevronDown, HiOutlineLogout, HiOutlineHeart, HiOutlineUser } from "react-icons/hi";
+import { addCacheBusting, getUserInitials, handleImageError } from "../utils/imageUtils";
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -56,11 +57,6 @@ const Navbar = () => {
     logout();
     navigate("/");
     closeMobileMenu();
-  };
-
-  const getInitials = (name) => {
-    if (!name) return "U";
-    return name.split(" ").map(n => n[0]).join("").toUpperCase().substring(0, 2);
   };
 
   return (
@@ -132,11 +128,19 @@ const Navbar = () => {
                       className="flex items-center space-x-2 p-1 rounded-full hover:bg-black/5 transition-all duration-200"
                     >
                       <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-[#2c2863] to-[#4a4494] flex items-center justify-center text-white font-bold text-sm border-2 border-white shadow-sm overflow-hidden">
-                        {user?.avatar ? (
-                          <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
-                        ) : (
-                          getInitials(user?.name)
-                        )}
+                        {user?.profilePicture ? (
+                          <img 
+                            src={addCacheBusting(user.profilePicture)} 
+                            alt={user.name} 
+                            className="w-full h-full object-cover"
+                            onError={handleImageError}
+                          />
+                        ) : null}
+                        <div 
+                          className={`w-full h-full flex items-center justify-center ${user?.profilePicture ? 'hidden' : ''}`}
+                        >
+                          {getUserInitials(user?.name)}
+                        </div>
                       </div>
                       <HiOutlineChevronDown className={`text-[#2c2863] transition-transform duration-200 ${isProfileOpen ? 'rotate-180' : ''}`} />
                     </button>
@@ -196,11 +200,19 @@ const Navbar = () => {
             <div className="md:hidden flex items-center gap-4">
               {isAuthenticated && (
                 <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#2c2863] to-[#4a4494] flex items-center justify-center text-white font-bold text-xs border-2 border-white shadow-sm overflow-hidden">
-                  {user?.avatar ? (
-                    <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
-                  ) : (
-                    getInitials(user?.name)
-                  )}
+                  {user?.profilePicture ? (
+                    <img 
+                      src={addCacheBusting(user.profilePicture)} 
+                      alt={user.name} 
+                      className="w-full h-full object-cover"
+                      onError={handleImageError}
+                    />
+                  ) : null}
+                  <div 
+                    className={`w-full h-full flex items-center justify-center ${user?.profilePicture ? 'hidden' : ''}`}
+                  >
+                    {getUserInitials(user?.name)}
+                  </div>
                 </div>
               )}
               <button

@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { authAPI } from '../services/api';
 import { HiOutlineUser, HiOutlineCamera, HiOutlineKey, HiOutlineHeart, HiOutlineEye, HiOutlineEyeOff } from 'react-icons/hi';
+import { addCacheBusting, getUserInitials, handleImageError } from '../utils/imageUtils';
 
 const Profile = () => {
-  const { user, token } = useAuth();
+  const { user, token, updateUser } = useAuth();
   const [activeTab, setActiveTab] = useState('profile');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
@@ -27,7 +28,7 @@ const Profile = () => {
     confirmPassword: ''
   });
 
-  const [previewImage, setPreviewImage] = useState(user?.profilePicture || '');
+  const [previewImage, setPreviewImage] = useState(user?.profilePicture ? addCacheBusting(user.profilePicture) : '');
 
   useEffect(() => {
     if (user) {
@@ -37,7 +38,7 @@ const Profile = () => {
         phone: user.phone || '',
         profilePicture: null
       });
-      setPreviewImage(user.profilePicture || '');
+      setPreviewImage(user.profilePicture ? addCacheBusting(user.profilePicture) : '');
     }
   }, [user]);
 
@@ -75,15 +76,17 @@ const Profile = () => {
 
       const response = await authAPI.updateProfile(formData, true);
       
-      // Update local storage with new user data
+      // Update user context with new data (this will automatically update navbar)
       const updatedUser = response.data.user;
-      localStorage.setItem('user', JSON.stringify(updatedUser));
+      updateUser(updatedUser);
+      
+      // Update preview image with cache busting
+      if (updatedUser.profilePicture) {
+        setPreviewImage(addCacheBusting(updatedUser.profilePicture));
+      }
       
       setMessage('✅ Profile updated successfully!');
       setTimeout(() => setMessage(''), 5000);
-      
-      // Refresh the page to update navbar
-      window.location.reload();
     } catch (error) {
       console.error('Profile update error:', error);
       setMessage(`❌ ${error.response?.data?.message || 'Failed to update profile'}`);
@@ -135,8 +138,7 @@ const Profile = () => {
   };
 
   const getInitials = (name) => {
-    if (!name) return 'U';
-    return name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+    return getUserInitials(name);
   };
 
   const tabs = [
@@ -152,10 +154,18 @@ const Profile = () => {
           <div className="flex items-center space-x-4">
             <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-[#2c2863] to-[#4a4494] flex items-center justify-center text-white font-bold text-xl border-4 border-white shadow-lg overflow-hidden">
               {previewImage ? (
-                <img src={previewImage} alt={user?.name} className="w-full h-full object-cover" />
-              ) : (
-                getInitials(user?.name)
-              )}
+                <img 
+                  src={previewImage} 
+                  alt={user?.name} 
+                  className="w-full h-full object-cover"
+                  onError={handleImageError}
+                />
+              ) : null}
+              <div 
+                className={`w-full h-full flex items-center justify-center ${previewImage ? 'hidden' : ''}`}
+              >
+                {getInitials(user?.name)}
+              </div>
             </div>
             <div>
               <h1 className="text-2xl font-bold text-[#2c2863]">Manage Profile</h1>
@@ -227,10 +237,18 @@ const Profile = () => {
                     <div className="flex items-center space-x-6">
                       <div className="w-24 h-24 rounded-full bg-gradient-to-tr from-[#2c2863] to-[#4a4494] flex items-center justify-center text-white font-bold text-2xl border-4 border-white shadow-lg overflow-hidden">
                         {previewImage ? (
-                          <img src={previewImage} alt="Profile" className="w-full h-full object-cover" />
-                        ) : (
-                          getInitials(profileData.name)
-                        )}
+                          <img 
+                            src={previewImage} 
+                            alt="Profile" 
+                            className="w-full h-full object-cover"
+                            onError={handleImageError}
+                          />
+                        ) : null}
+                        <div 
+                          className={`w-full h-full flex items-center justify-center ${previewImage ? 'hidden' : ''}`}
+                        >
+                          {getInitials(profileData.name)}
+                        </div>
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
