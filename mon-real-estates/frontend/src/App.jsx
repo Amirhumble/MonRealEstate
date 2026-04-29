@@ -2,7 +2,9 @@ import './App.css';
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
 import Listings from "./pages/Listings";
+import Projects from "./pages/Projects";
 import PropertyDetails from "./pages/PropertyDetails";
+import ProjectDetails from "./pages/ProjectDetails";
 import Contact from "./pages/Contact";
 import AdminDashboard from "./pages/AdminDashboard";
 import Login from "./pages/Login";
@@ -25,7 +27,9 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/listings" element={<Listings />} />
+          <Route path="/projects" element={<Projects />} />
           <Route path="/property/:id" element={<PropertyDetails />} />
+          <Route path="/project/:id" element={<ProjectDetails />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />

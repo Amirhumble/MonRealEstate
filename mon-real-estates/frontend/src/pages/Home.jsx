@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { propertiesAPI } from "../services/api";
+import { propertiesAPI, projectsAPI } from "../services/api";
 import { Link } from "react-router-dom";
 import PropertyCard from "../components/PropertyCard";
+import ProjectCard from "../components/ProjectCard";
 import { MdHome, MdLocationCity, MdNaturePeople } from "react-icons/md";
 
 const categories = [
@@ -54,21 +55,26 @@ const testimonials = [
 
 const Home = () => {
   const [featuredProperties, setFeaturedProperties] = useState([]);
+  const [featuredProjects, setFeaturedProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    const fetchFeaturedProperties = async () => {
+    const fetchFeaturedData = async () => {
       try {
-        const res = await propertiesAPI.getFeatured();
-        setFeaturedProperties(res.data);
+        const [propertiesRes, projectsRes] = await Promise.all([
+          propertiesAPI.getFeatured(),
+          projectsAPI.getFeatured()
+        ]);
+        setFeaturedProperties(propertiesRes.data);
+        setFeaturedProjects(projectsRes.data);
       } catch (err) {
-        setError("Failed to load properties");
+        setError("Failed to load featured content");
       } finally {
         setLoading(false);
       }
     };
-    fetchFeaturedProperties();
+    fetchFeaturedData();
   }, []);
 
   if (loading) return <p className="text-center py-20 text-lg">Loading properties...</p>;
@@ -164,6 +170,47 @@ const Home = () => {
       </section>
 
       <section className="py-16">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="mb-12 text-center">
+            <p className="text-sm uppercase tracking-[0.35em] text-[#e81d2b]">Building Developments</p>
+            <h2 className="mt-4 text-4xl font-bold text-[#1f2b52]">Featured Projects</h2>
+            <p className="mx-auto mt-3 max-w-2xl text-gray-600">
+              Discover our exceptional real estate developments from completed landmarks to upcoming projects designed for modern living.
+            </p>
+          </div>
+
+          {featuredProjects.length > 0 ? (
+            <>
+              <div className="grid gap-6 md:grid-cols-3">
+                {featuredProjects.map((project) => (
+                  <ProjectCard key={project._id} project={project} />
+                ))}
+              </div>
+
+              <div className="mt-10 text-center">
+                <Link
+                  to="/projects"
+                  className="inline-flex rounded-full bg-[#2c2863] px-10 py-3 text-sm font-semibold tracking-wide text-white transition hover:bg-[#1c1a42]"
+                >
+                  View all projects
+                </Link>
+              </div>
+            </>
+          ) : (
+            <div className="text-center py-12">
+              <p className="text-gray-500 mb-6">No featured projects available at the moment.</p>
+              <Link
+                to="/projects"
+                className="inline-flex rounded-full bg-[#2c2863] px-10 py-3 text-sm font-semibold tracking-wide text-white transition hover:bg-[#1c1a42]"
+              >
+                Browse all projects
+              </Link>
+            </div>
+          )}
+        </div>
+      </section>
+
+      <section className="py-16 bg-slate-50">
         <div className="max-w-6xl mx-auto px-6">
           <div className="grid gap-10 lg:grid-cols-2 lg:items-center">
             <div>
