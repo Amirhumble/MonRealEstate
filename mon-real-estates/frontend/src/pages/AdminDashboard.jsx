@@ -64,6 +64,8 @@ const AdminDashboard = () => {
   const [editingProjectId, setEditingProjectId] = useState(null);
   const [activeTab, setActiveTab] = useState("properties");
   const [isLoading, setIsLoading] = useState(false);
+  const [editingPropertyName, setEditingPropertyName] = useState("");
+  const [editingProjectName, setEditingProjectName] = useState("");
 
   // Load properties, projects, contacts, and admins from backend
   useEffect(() => {
@@ -166,6 +168,7 @@ const AdminDashboard = () => {
         res = await propertiesAPI.update(editingId, formData, true);
         setAllProperties(allProperties.map((p) => (p._id === editingId ? res.data : p)));
         setEditingId(null);
+        setEditingPropertyName("");
         setSuccessMessage("✅ Property updated successfully!");
       } else {
         res = await propertiesAPI.create(formData, true);
@@ -222,6 +225,7 @@ const AdminDashboard = () => {
 
   const handleEdit = (property) => {
     setEditingId(property._id);
+    setEditingPropertyName(property.title);
     setNewProperty({
       title: property.title || "",
       location: property.location || "",
@@ -253,6 +257,24 @@ const AdminDashboard = () => {
       agentPhoto: null,
       featured: property.featured || false
     });
+    
+    // Auto-scroll to form with smooth animation
+    setTimeout(() => {
+      const formElement = document.getElementById('property-form');
+      if (formElement) {
+        formElement.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'start',
+          inline: 'nearest'
+        });
+        
+        // Add highlight animation
+        formElement.classList.add('edit-mode-highlight');
+        setTimeout(() => {
+          formElement.classList.remove('edit-mode-highlight');
+        }, 2000);
+      }
+    }, 100);
   };
 
   const handleDelete = async (id) => {
@@ -382,6 +404,7 @@ const AdminDashboard = () => {
         res = await projectsAPI.update(editingProjectId, formData, true);
         setAllProjects(allProjects.map((p) => (p._id === editingProjectId ? res.data : p)));
         setEditingProjectId(null);
+        setEditingProjectName("");
         setSuccessMessage("✅ Project updated successfully!");
       } else {
         res = await projectsAPI.create(formData, true);
@@ -416,6 +439,7 @@ const AdminDashboard = () => {
 
   const handleEditProject = (project) => {
     setEditingProjectId(project._id);
+    setEditingProjectName(project.name);
     setNewProject({
       name: project.name,
       status: project.status,
@@ -431,6 +455,24 @@ const AdminDashboard = () => {
       completionDate: project.completionDate || "",
       featured: project.featured
     });
+    
+    // Auto-scroll to form with smooth animation
+    setTimeout(() => {
+      const formElement = document.getElementById('project-form');
+      if (formElement) {
+        formElement.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'start',
+          inline: 'nearest'
+        });
+        
+        // Add highlight animation
+        formElement.classList.add('edit-mode-highlight');
+        setTimeout(() => {
+          formElement.classList.remove('edit-mode-highlight');
+        }, 2000);
+      }
+    }, 100);
   };
 
   const handleDeleteProject = async (id) => {
@@ -445,8 +487,84 @@ const AdminDashboard = () => {
     }
   };
 
+  const cancelPropertyEdit = () => {
+    setEditingId(null);
+    setEditingPropertyName("");
+    setNewProperty({
+      title: "",
+      location: "",
+      price: "",
+      type: "",
+      image: null,
+      images: [],
+      description: "",
+      status: "For Sale",
+      bedrooms: "",
+      bathrooms: "",
+      area: "",
+      lotSize: "",
+      yearBuilt: "",
+      parking: "",
+      floors: "",
+      features: "",
+      amenities: "",
+      address: "",
+      city: "",
+      neighborhood: "",
+      zipCode: "",
+      floorPlans: [],
+      virtualTour: "",
+      videoUrl: "",
+      agentName: "",
+      agentEmail: "",
+      agentPhone: "",
+      agentPhoto: null,
+      featured: false
+    });
+  };
+
+  const cancelProjectEdit = () => {
+    setEditingProjectId(null);
+    setEditingProjectName("");
+    setNewProject({
+      name: "",
+      status: "Upcoming",
+      location: "",
+      description: "",
+      coverImage: null,
+      images: [],
+      units: "",
+      size: "",
+      amenities: "",
+      features: "",
+      timeline: "",
+      completionDate: "",
+      featured: false
+    });
+  };
+
   return (
     <div className="min-h-screen" style={{ backgroundColor: "#e8e8e8" }}>
+      <style jsx>{`
+        .edit-mode-highlight {
+          animation: editHighlight 2s ease-in-out;
+        }
+        
+        @keyframes editHighlight {
+          0% { 
+            box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7);
+            transform: scale(1);
+          }
+          50% { 
+            box-shadow: 0 0 0 10px rgba(59, 130, 246, 0.3);
+            transform: scale(1.02);
+          }
+          100% { 
+            box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+            transform: scale(1);
+          }
+        }
+      `}</style>
       <div className="container mx-auto p-6">
         <h1 className="text-4xl font-bold mb-8 text-center" style={{ color: "#2c2863" }}>
           Admin Dashboard
@@ -523,11 +641,69 @@ const AdminDashboard = () => {
 
         {activeTab === "properties" && (
           <>
+            {/* Edit Mode Banner */}
+            {editingId && (
+              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-blue-500 p-4 mb-6 rounded-lg shadow-sm">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <div className="flex-shrink-0">
+                      <svg className="h-6 w-6 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                      </svg>
+                    </div>
+                    <div className="ml-3">
+                      <h3 className="text-lg font-semibold text-blue-800">
+                        🏠 Editing Property: "{editingPropertyName}"
+                      </h3>
+                      <p className="text-sm text-blue-600">
+                        Make your changes below and click "Update Property" to save.
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={cancelPropertyEdit}
+                    className="text-blue-500 hover:text-blue-700 transition-colors"
+                    title="Cancel editing"
+                  >
+                    <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            )}
+
             {/* Add/Edit Property Form */}
-            <div className="bg-white p-6 rounded-lg shadow-md mb-10">
-              <h2 className="text-2xl font-semibold mb-4" style={{ color: "#2c2863" }}>
-                {editingId ? "Edit Property" : "Add New Property"}
-              </h2>
+            <div 
+              id="property-form"
+              className={`bg-white p-6 rounded-lg shadow-md mb-10 transition-all duration-500 ${
+                editingId ? 'ring-2 ring-blue-200 bg-gradient-to-br from-blue-50/30 to-white' : ''
+              }`}
+            >
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-2xl font-semibold" style={{ color: "#2c2863" }}>
+                  {editingId ? (
+                    <span className="flex items-center gap-2">
+                      <svg className="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                      </svg>
+                      Edit Property
+                    </span>
+                  ) : (
+                    <span className="flex items-center gap-2">
+                      <svg className="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                      </svg>
+                      Add New Property
+                    </span>
+                  )}
+                </h2>
+                {editingId && (
+                  <div className="text-sm text-blue-600 bg-blue-100 px-3 py-1 rounded-full">
+                    Edit Mode Active
+                  </div>
+                )}
+              </div>
               <form onSubmit={handleAddProperty} className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Basic Information */}
                 <div className="md:col-span-2">
@@ -867,6 +1043,8 @@ const AdminDashboard = () => {
                     className={`flex-1 text-white px-6 py-3 rounded-lg transition font-semibold ${
                       isLoading 
                         ? "bg-gray-400 cursor-not-allowed" 
+                        : editingId
+                        ? "bg-blue-600 hover:bg-blue-700"
                         : "bg-[#e81d2b] hover:bg-red-700"
                     }`}
                   >
@@ -879,49 +1057,35 @@ const AdminDashboard = () => {
                         {editingId ? "Updating..." : "Adding..."}
                       </span>
                     ) : (
-                      editingId ? "Update Property" : "Add Property"
+                      <span className="flex items-center justify-center gap-2">
+                        {editingId ? (
+                          <>
+                            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                            Update Property
+                          </>
+                        ) : (
+                          <>
+                            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                            </svg>
+                            Add Property
+                          </>
+                        )}
+                      </span>
                     )}
                   </button>
                   {editingId && (
                     <button
                       type="button"
-                      onClick={() => {
-                        setEditingId(null);
-                        setNewProperty({
-                          title: "",
-                          location: "",
-                          price: "",
-                          type: "",
-                          image: null,
-                          images: [],
-                          description: "",
-                          status: "For Sale",
-                          bedrooms: "",
-                          bathrooms: "",
-                          area: "",
-                          lotSize: "",
-                          yearBuilt: "",
-                          parking: "",
-                          floors: "",
-                          features: "",
-                          amenities: "",
-                          address: "",
-                          city: "",
-                          neighborhood: "",
-                          zipCode: "",
-                          floorPlans: [],
-                          virtualTour: "",
-                          videoUrl: "",
-                          agentName: "",
-                          agentEmail: "",
-                          agentPhone: "",
-                          agentPhoto: null,
-                          featured: false
-                        });
-                      }}
-                      className="px-6 bg-gray-500 text-white py-3 rounded-lg hover:bg-gray-600 transition font-semibold"
+                      onClick={cancelPropertyEdit}
+                      className="px-6 bg-gray-500 text-white py-3 rounded-lg hover:bg-gray-600 transition font-semibold flex items-center gap-2"
                     >
-                      Cancel
+                      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                      Cancel Edit
                     </button>
                   )}
                 </div>
@@ -959,14 +1123,20 @@ const AdminDashboard = () => {
                     <div className="flex gap-3">
                       <button
                         onClick={() => handleEdit(property)}
-                        className="bg-[#2c2863] text-white px-4 py-2 rounded hover:bg-blue-800 transition flex-1"
+                        className="bg-[#2c2863] text-white px-4 py-2 rounded hover:bg-blue-800 transition flex-1 flex items-center justify-center gap-2"
                       >
+                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
                         Edit
                       </button>
                       <button
                         onClick={() => handleDelete(property._id)}
-                        className="bg-[#e81d2b] text-white px-4 py-2 rounded hover:bg-red-700 transition flex-1"
+                        className="bg-[#e81d2b] text-white px-4 py-2 rounded hover:bg-red-700 transition flex-1 flex items-center justify-center gap-2"
                       >
+                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
                         Delete
                       </button>
                     </div>
@@ -979,11 +1149,69 @@ const AdminDashboard = () => {
 
         {activeTab === "projects" && (
           <>
+            {/* Edit Mode Banner */}
+            {editingProjectId && (
+              <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-l-4 border-green-500 p-4 mb-6 rounded-lg shadow-sm">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <div className="flex-shrink-0">
+                      <svg className="h-6 w-6 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                      </svg>
+                    </div>
+                    <div className="ml-3">
+                      <h3 className="text-lg font-semibold text-green-800">
+                        🏗️ Editing Project: "{editingProjectName}"
+                      </h3>
+                      <p className="text-sm text-green-600">
+                        Make your changes below and click "Update Project" to save.
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={cancelProjectEdit}
+                    className="text-green-500 hover:text-green-700 transition-colors"
+                    title="Cancel editing"
+                  >
+                    <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            )}
+
             {/* Add/Edit Project Form */}
-            <div className="bg-white p-6 rounded-lg shadow-md mb-10">
-              <h2 className="text-2xl font-semibold mb-4" style={{ color: "#2c2863" }}>
-                {editingProjectId ? "Edit Project" : "Add New Project"}
-              </h2>
+            <div 
+              id="project-form"
+              className={`bg-white p-6 rounded-lg shadow-md mb-10 transition-all duration-500 ${
+                editingProjectId ? 'ring-2 ring-green-200 bg-gradient-to-br from-green-50/30 to-white' : ''
+              }`}
+            >
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-2xl font-semibold" style={{ color: "#2c2863" }}>
+                  {editingProjectId ? (
+                    <span className="flex items-center gap-2">
+                      <svg className="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                      </svg>
+                      Edit Project
+                    </span>
+                  ) : (
+                    <span className="flex items-center gap-2">
+                      <svg className="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                      </svg>
+                      Add New Project
+                    </span>
+                  )}
+                </h2>
+                {editingProjectId && (
+                  <div className="text-sm text-green-600 bg-green-100 px-3 py-1 rounded-full">
+                    Edit Mode Active
+                  </div>
+                )}
+              </div>
               <form onSubmit={handleAddProject} className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <input
                   type="text"
@@ -1120,34 +1348,40 @@ const AdminDashboard = () => {
                 <div className="md:col-span-2 flex gap-4">
                   <button
                     type="submit"
-                    className="flex-1 bg-[#e81d2b] text-white py-3 rounded-lg font-semibold hover:bg-red-700 transition"
+                    className={`flex-1 text-white py-3 rounded-lg font-semibold transition ${
+                      editingProjectId
+                        ? "bg-green-600 hover:bg-green-700"
+                        : "bg-[#e81d2b] hover:bg-red-700"
+                    }`}
                   >
-                    {editingProjectId ? "Update Project" : "Add Project"}
+                    <span className="flex items-center justify-center gap-2">
+                      {editingProjectId ? (
+                        <>
+                          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                          </svg>
+                          Update Project
+                        </>
+                      ) : (
+                        <>
+                          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                          </svg>
+                          Add Project
+                        </>
+                      )}
+                    </span>
                   </button>
                   {editingProjectId && (
                     <button
                       type="button"
-                      onClick={() => {
-                        setEditingProjectId(null);
-                        setNewProject({
-                          name: "",
-                          status: "Upcoming",
-                          location: "",
-                          description: "",
-                          coverImage: null,
-                          images: [],
-                          units: "",
-                          size: "",
-                          amenities: "",
-                          features: "",
-                          timeline: "",
-                          completionDate: "",
-                          featured: false
-                        });
-                      }}
-                      className="px-6 bg-gray-500 text-white py-3 rounded-lg font-semibold hover:bg-gray-600 transition"
+                      onClick={cancelProjectEdit}
+                      className="px-6 bg-gray-500 text-white py-3 rounded-lg font-semibold hover:bg-gray-600 transition flex items-center gap-2"
                     >
-                      Cancel
+                      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                      Cancel Edit
                     </button>
                   )}
                 </div>
@@ -1193,14 +1427,20 @@ const AdminDashboard = () => {
                       <div className="flex gap-2">
                         <button
                           onClick={() => handleEditProject(project)}
-                          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition text-sm"
+                          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition text-sm flex items-center gap-2"
                         >
+                          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                          </svg>
                           Edit
                         </button>
                         <button
                           onClick={() => handleDeleteProject(project._id)}
-                          className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition text-sm"
+                          className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition text-sm flex items-center gap-2"
                         >
+                          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
                           Delete
                         </button>
                       </div>
