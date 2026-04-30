@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { authAPI } from "../services/api";
+import { authAPI, setAccessToken, clearAccessToken } from "../services/api";
 
 const AuthContext = createContext();
 
@@ -11,34 +11,80 @@ export const AuthProvider = ({ children }) => {
       return null;
     }
   });
-  const [token, setToken] = useState(() => localStorage.getItem("token") || null);
+  const [accessToken, setAccessTokenState] = useState(() => localStorage.getItem("accessToken") || null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!token) {
-      setLoading(false);
-      return;
-    }
-
-    const fetchProfile = async () => {
-      try {
-        const response = await authAPI.getProfile();
-        setUser(response.data.user);
-      } catch (error) {
-        console.error("Profile fetch failed:", error);
-        logout();
-      } finally {
-        setLoading(false);
-      }
+    // Set up auth logout listener
+    const handleAuthLogout = () => {
+      setUser(null);
+      setAccessTokenState(null);
+      localStorage.removeItem("user");
+      localStorage.removeItem("accessToken");
     };
 
-    fetchProfile();
-  }, [token]);
+    window.addEventListener('auth:logout', handleAuthLogout);
 
-  const saveSession = ({ user, token }) => {
+    return () => {
+      window.removeEventListener('auth:logout', handleAuthLogout);
+    };
+  }, []);
+
+  useEffect(() => {
+    const initializeAuth = async () => {
+      if (!accessToken) {
+        // Try to refresh token on app start
+        try {
+          const response = await authAPI.refresh();
+          const { accessToken: newAccessToken } = response.data;
+          setAccessToken(newAccessToken);
+          setAccessTokenState(newAccessToken);
+          
+          // Fetch user profile
+          const profileResponse = await authAPI.getProfile();
+          setUser(profileResponse.data.user);
+          localStorage.setItem("user", JSON.stringify(profileResponse.data.user));
+        } catch (error) {
+          console.log("No valid refresh token, user needs to login");
+          clearAccessToken();
+        }
+      } else {
+        // We have an access token, try to fetch profile
+        try {
+          setAccessToken(accessToken);
+          const response = await authAPI.getProfile();
+          setUser(response.data.user);
+          localStorage.setItem("user", JSON.stringify(response.data.user));
+        } catch (error) {
+          console.error("Profile fetch failed:", error);
+          // Try to refresh token
+          try {
+            const refreshResponse = await authAPI.refresh();
+            const { accessToken: newAccessToken } = refreshResponse.data;
+            setAccessToken(newAccessToken);
+            setAccessTokenState(newAccessToken);
+            
+            // Retry profile fetch
+            const profileResponse = await authAPI.getProfile();
+            setUser(profileResponse.data.user);
+            localStorage.setItem("user", JSON.stringify(profileResponse.data.user));
+          } catch (refreshError) {
+            console.error("Token refresh failed:", refreshError);
+            logout();
+          }
+        }
+      }
+      setLoading(false);
+    };
+
+    initializeAuth();
+  }, []);
+
+  const saveSession = ({ user, accessToken }) => {
     setUser(user);
-    setToken(token);
-    localStorage.setItem("token", token);
+    setAccessTokenState(accessToken);
+    setAccessToken(accessToken);
+    localStorage.setItem("accessToken", accessToken);
     localStorage.setItem("user", JSON.stringify(user));
   };
 
@@ -54,11 +100,30 @@ export const AuthProvider = ({ children }) => {
     return response;
   };
 
-  const logout = () => {
-    setUser(null);
-    setToken(null);
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+  const logout = async () => {
+    try {
+      await authAPI.logout();
+    } catch (error) {
+      console.error("Logout API call failed:", error);
+    } finally {
+      setUser(null);
+      setAccessTokenState(null);
+      clearAccessToken();
+      localStorage.removeItem("user");
+    }
+  };
+
+  const logoutAll = async () => {
+    try {
+      await authAPI.logoutAll();
+    } catch (error) {
+      console.error("Logout all API call failed:", error);
+    } finally {
+      setUser(null);
+      setAccessTokenState(null);
+      clearAccessToken();
+      localStorage.removeItem("user");
+    }
   };
 
   const updateUser = (updatedUserData) => {
@@ -73,11 +138,12 @@ export const AuthProvider = ({ children }) => {
     <AuthContext.Provider
       value={{
         user,
-        token,
+        accessToken,
         loading,
         login,
         register,
         logout,
+        logoutAll,
         updateUser,
         isAdmin,
         isAuthenticated: !!user,

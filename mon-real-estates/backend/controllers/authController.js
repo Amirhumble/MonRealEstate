@@ -1,5 +1,5 @@
 import { User } from "../models/user.js";
-import signToken from "../utils/generateToken.js";
+import { generateTokens, generateAccessToken, verifyAccessToken } from "../utils/generateToken.js";
 import cloudinary from "../config/cloudinary.js";
 
 const safeUser = (user) => ({
@@ -109,8 +109,26 @@ export const register = async (req, res) => {
 
     await user.save();
 
-    const token = signToken(user);
-    res.status(201).json({ user: safeUser(user), token });
+    // Generate tokens
+    const { accessToken, refreshToken } = generateTokens(user);
+    
+    // Store refresh token in database
+    user.refreshTokens.push({ token: refreshToken });
+    await user.save();
+
+    // Set refresh token as HTTP-only cookie
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+    });
+
+    res.status(201).json({ 
+      user: safeUser(user), 
+      accessToken,
+      message: "Registration successful"
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -140,9 +158,27 @@ export const login = async (req, res) => {
       return res.status(401).json({ message: "Invalid email or password." });
     }
 
-    const token = signToken(user);
+    // Generate tokens
+    const { accessToken, refreshToken } = generateTokens(user);
+    
+    // Store refresh token in database
+    user.refreshTokens.push({ token: refreshToken });
+    await user.save();
+
+    // Set refresh token as HTTP-only cookie
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+    });
+
     console.log(`Login successful for user ${normalizedEmail}`);
-    res.status(200).json({ user: safeUser(user), token });
+    res.status(200).json({ 
+      user: safeUser(user), 
+      accessToken,
+      message: "Login successful"
+    });
   } catch (error) {
     console.error("Login Error:", error);
     res.status(500).json({ message: error.message });
@@ -246,6 +282,105 @@ export const deleteAdmin = async (req, res) => {
     }
 
     res.status(200).json({ message: "Admin deleted successfully." });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Refresh Token Endpoint
+export const refreshToken = async (req, res) => {
+  try {
+    const { refreshToken } = req.cookies;
+
+    if (!refreshToken) {
+      return res.status(401).json({ message: "Refresh token not provided." });
+    }
+
+    // Find user with this refresh token
+    const user = await User.findOne({ 
+      "refreshTokens.token": refreshToken 
+    });
+
+    if (!user) {
+      return res.status(403).json({ message: "Invalid refresh token." });
+    }
+
+    // Check if refresh token exists and is not expired
+    const tokenIndex = user.refreshTokens.findIndex(
+      (tokenObj) => tokenObj.token === refreshToken
+    );
+
+    if (tokenIndex === -1) {
+      return res.status(403).json({ message: "Refresh token not found." });
+    }
+
+    // Generate new access token
+    const newAccessToken = generateAccessToken(user);
+
+    // Optional: Rotate refresh token (recommended for security)
+    const { refreshToken: newRefreshToken } = generateTokens(user);
+    
+    // Remove old refresh token and add new one
+    user.refreshTokens.splice(tokenIndex, 1);
+    user.refreshTokens.push({ token: newRefreshToken });
+    await user.save();
+
+    // Set new refresh token cookie
+    res.cookie('refreshToken', newRefreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+    });
+
+    res.status(200).json({ 
+      accessToken: newAccessToken,
+      message: "Token refreshed successfully"
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Logout Endpoint
+export const logout = async (req, res) => {
+  try {
+    const { refreshToken } = req.cookies;
+
+    if (refreshToken) {
+      // Remove refresh token from database
+      await User.updateOne(
+        { "refreshTokens.token": refreshToken },
+        { $pull: { refreshTokens: { token: refreshToken } } }
+      );
+    }
+
+    // Clear refresh token cookie
+    res.clearCookie('refreshToken');
+
+    res.status(200).json({ message: "Logged out successfully." });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Logout from all devices
+export const logoutAll = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    // Clear all refresh tokens
+    user.refreshTokens = [];
+    await user.save();
+
+    // Clear refresh token cookie
+    res.clearCookie('refreshToken');
+
+    res.status(200).json({ message: "Logged out from all devices successfully." });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

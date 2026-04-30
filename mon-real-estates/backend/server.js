@@ -1,4 +1,5 @@
 import express from "express";
+import cookieParser from "cookie-parser";
 import propertyRoutes  from "./routes/propertyRoutes.js";
 import projectRoutes from "./routes/projectRoutes.js";
 import contactRoutes from "./routes/contactRoutes.js";
@@ -23,7 +24,8 @@ app.use(cors(
 }
 ));
 
-app.use(express.json())
+app.use(express.json());
+app.use(cookieParser());
 
 
 //database connection

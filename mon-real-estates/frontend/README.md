@@ -70,3 +70,7 @@ admin credential
 
 email: admin@monrealestate.com
 password: admin123
+
+
+1. image, video, ... resources to cloudinary(their is no cloudinary setup), i will create cloudinary account for monrealestate
+2. 
