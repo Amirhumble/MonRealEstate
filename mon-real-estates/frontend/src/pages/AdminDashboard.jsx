@@ -565,8 +565,8 @@ const AdminDashboard = () => {
           }
         }
       `}</style>
-      <div className="container mx-auto p-6">
-        <h1 className="text-4xl font-bold mb-8 text-center" style={{ color: "#2c2863" }}>
+      <div className="container mx-auto p-4 sm:p-6">
+        <h1 className="text-3xl sm:text-4xl font-bold mb-6 sm:mb-8 text-center" style={{ color: "#2c2863" }}>
           Admin Dashboard
         </h1>
 
@@ -596,47 +596,51 @@ const AdminDashboard = () => {
         )}
 
         {/* Tabs */}
-        <div className="flex justify-center mb-8 flex-wrap gap-2">
-          <button
-            onClick={() => setActiveTab("properties")}
-            className={`px-6 py-3 rounded-lg font-semibold transition ${
-              activeTab === "properties"
-                ? "bg-[#2c2863] text-white"
-                : "bg-white text-[#2c2863] border border-[#2c2863]"
-            }`}
-          >
-            Properties
-          </button>
-          <button
-            onClick={() => setActiveTab("projects")}
-            className={`px-6 py-3 rounded-lg font-semibold transition ${
-              activeTab === "projects"
-                ? "bg-[#2c2863] text-white"
-                : "bg-white text-[#2c2863] border border-[#2c2863]"
-            }`}
-          >
-            Projects
-          </button>
-          <button
-            onClick={() => setActiveTab("contacts")}
-            className={`px-6 py-3 rounded-lg font-semibold transition ${
-              activeTab === "contacts"
-                ? "bg-[#2c2863] text-white"
-                : "bg-white text-[#2c2863] border border-[#2c2863]"
-            }`}
-          >
-            Contact Messages
-          </button>
-          <button
-            onClick={() => setActiveTab("admins")}
-            className={`px-6 py-3 rounded-lg font-semibold transition ${
-              activeTab === "admins"
-                ? "bg-[#2c2863] text-white"
-                : "bg-white text-[#2c2863] border border-[#2c2863]"
-            }`}
-          >
-            Manage Admins
-          </button>
+        <div className="flex justify-center mb-6 sm:mb-8 overflow-x-auto">
+          <div className="flex gap-2 min-w-max px-2 sm:px-0">
+            <button
+              onClick={() => setActiveTab("properties")}
+              className={`px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-semibold transition whitespace-nowrap ${
+                activeTab === "properties"
+                  ? "bg-[#2c2863] text-white"
+                  : "bg-white text-[#2c2863] border border-[#2c2863]"
+              }`}
+            >
+              Properties
+            </button>
+            <button
+              onClick={() => setActiveTab("projects")}
+              className={`px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-semibold transition whitespace-nowrap ${
+                activeTab === "projects"
+                  ? "bg-[#2c2863] text-white"
+                  : "bg-white text-[#2c2863] border border-[#2c2863]"
+              }`}
+            >
+              Projects
+            </button>
+            <button
+              onClick={() => setActiveTab("contacts")}
+              className={`px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-semibold transition whitespace-nowrap ${
+                activeTab === "contacts"
+                  ? "bg-[#2c2863] text-white"
+                  : "bg-white text-[#2c2863] border border-[#2c2863]"
+              }`}
+            >
+              <span className="hidden sm:inline">Contact Messages</span>
+              <span className="sm:hidden">Contacts</span>
+            </button>
+            <button
+              onClick={() => setActiveTab("admins")}
+              className={`px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-semibold transition whitespace-nowrap ${
+                activeTab === "admins"
+                  ? "bg-[#2c2863] text-white"
+                  : "bg-white text-[#2c2863] border border-[#2c2863]"
+              }`}
+            >
+              <span className="hidden sm:inline">Manage Admins</span>
+              <span className="sm:hidden">Admins</span>
+            </button>
+          </div>
         </div>
 
         {activeTab === "properties" && (
@@ -704,9 +708,9 @@ const AdminDashboard = () => {
                   </div>
                 )}
               </div>
-              <form onSubmit={handleAddProperty} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <form onSubmit={handleAddProperty} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* Basic Information */}
-                <div className="md:col-span-2">
+                <div className="sm:col-span-2">
                   <h3 className="text-lg font-semibold text-gray-700 mb-3">Basic Information</h3>
                 </div>
                 
@@ -1096,7 +1100,7 @@ const AdminDashboard = () => {
             <h2 className="text-2xl font-semibold mb-6" style={{ color: "#2c2863" }}>
               Current Properties
             </h2>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               {allProperties.map((property) => (
                 <div
                   key={property._id}
@@ -1212,7 +1216,7 @@ const AdminDashboard = () => {
                   </div>
                 )}
               </div>
-              <form onSubmit={handleAddProject} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <form onSubmit={handleAddProject} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <input
                   type="text"
                   name="name"

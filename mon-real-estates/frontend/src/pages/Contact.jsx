@@ -5,59 +5,62 @@ import { FaFacebookF, FaInstagram, FaLinkedinIn, FaWhatsapp } from "react-icons/
 
 const Contact = () => {
   return (
-    <div className="max-w-6xl mx-auto p-6">
-      <h1 className="text-4xl font-bold mb-8 text-center text-[#2c2863]">Contact Us</h1>
+    <div className="max-w-6xl mx-auto p-4 sm:p-6">
+      <h1 className="text-3xl sm:text-4xl font-bold mb-6 sm:mb-8 text-center text-[#2c2863]">Contact Us</h1>
 
-      <div className="grid gap-8 lg:grid-cols-[1.05fr_0.95fr] items-start">
-        <div className="rounded-[32px] bg-gradient-to-br from-blue-50 via-white to-indigo-50 border border-white shadow-xl p-8 md:p-10">
+      <div className="grid gap-6 sm:gap-8 lg:grid-cols-[1.05fr_0.95fr] items-start">
+        <div className="rounded-[24px] sm:rounded-[32px] bg-gradient-to-br from-blue-50 via-white to-indigo-50 border border-white shadow-xl p-6 sm:p-8 md:p-10">
           <p className="text-gray-700 text-lg leading-relaxed">
             Have questions about a property or want to book a viewing? Reach out to our team anytime using the details below.
             We’re here to help you find your perfect home in Addis Ababa and beyond.
           </p>
 
-          <div className="mt-10 space-y-6">
-            <div className="rounded-3xl bg-white p-5 shadow-sm border border-slate-200">
+            <div className="mt-8 sm:mt-10 space-y-4 sm:space-y-6">
+            <div className="rounded-2xl sm:rounded-3xl bg-white p-4 sm:p-5 shadow-sm border border-slate-200">
               <div className="flex items-center gap-3 text-[#2c2863] mb-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-100 text-blue-600">
-                  <MdPhone size={22} />
+                <div className="flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-xl sm:rounded-2xl bg-blue-100 text-blue-600">
+                  <MdPhone size={20} className="sm:hidden" />
+                  <MdPhone size={22} className="hidden sm:block" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Call Us</p>
-                  <p className="text-lg font-semibold">+251 911 123 456</p>
-                  <p className="text-sm text-gray-600">+251 911 654 321</p>
+                  <p className="text-xs sm:text-sm text-gray-500">Call Us</p>
+                  <p className="text-base sm:text-lg font-semibold">+251 911 123 456</p>
+                  <p className="text-xs sm:text-sm text-gray-600">+251 911 654 321</p>
                 </div>
               </div>
-              <a href="tel:+251911123456" className="text-sm text-blue-600 hover:text-blue-700 transition">
+              <a href="tel:+251911123456" className="text-xs sm:text-sm text-blue-600 hover:text-blue-700 transition">
                 Call primary number
               </a>
             </div>
 
-            <div className="rounded-3xl bg-white p-5 shadow-sm border border-slate-200">
+            <div className="rounded-2xl sm:rounded-3xl bg-white p-4 sm:p-5 shadow-sm border border-slate-200">
               <div className="flex items-center gap-3 text-[#2c2863] mb-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-600">
-                  <MdEmail size={22} />
+                <div className="flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-xl sm:rounded-2xl bg-emerald-100 text-emerald-600">
+                  <MdEmail size={20} className="sm:hidden" />
+                  <MdEmail size={22} className="hidden sm:block" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Email Us</p>
-                  <p className="text-lg font-semibold">support@monrealestate.com</p>
+                  <p className="text-xs sm:text-sm text-gray-500">Email Us</p>
+                  <p className="text-base sm:text-lg font-semibold">support@monrealestate.com</p>
                 </div>
               </div>
-              <a href="mailto:support@monrealestate.com" className="text-sm text-blue-600 hover:text-blue-700 transition">
+              <a href="mailto:support@monrealestate.com" className="text-xs sm:text-sm text-blue-600 hover:text-blue-700 transition">
                 Send us an email
               </a>
             </div>
 
-            <div className="rounded-3xl bg-white p-5 shadow-sm border border-slate-200">
+            <div className="rounded-2xl sm:rounded-3xl bg-white p-4 sm:p-5 shadow-sm border border-slate-200">
               <div className="flex items-center gap-3 text-[#2c2863] mb-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-100 text-violet-600">
-                  <MdLocationOn size={22} />
+                <div className="flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-xl sm:rounded-2xl bg-violet-100 text-violet-600">
+                  <MdLocationOn size={20} className="sm:hidden" />
+                  <MdLocationOn size={22} className="hidden sm:block" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Visit Our Office</p>
-                  <p className="text-lg font-semibold">Kazanchis, Addis Ababa</p>
+                  <p className="text-xs sm:text-sm text-gray-500">Visit Our Office</p>
+                  <p className="text-base sm:text-lg font-semibold">Kazanchis, Addis Ababa</p>
                 </div>
               </div>
-              <p className="text-sm text-gray-600">Open Monday to Saturday, 9:00 AM - 7:00 PM</p>
+              <p className="text-xs sm:text-sm text-gray-600">Open Monday to Saturday, 9:00 AM - 7:00 PM</p>
             </div>
           </div>
 

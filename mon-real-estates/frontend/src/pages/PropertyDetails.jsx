@@ -203,7 +203,7 @@ const PropertyDetails = () => {
             <MdChevronLeft className="text-2xl" /> Back to Listings
           </Link>
           
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 items-center">
             {/* Property Info */}
             <div>
               <div className="flex items-center gap-3 mb-4">
@@ -310,7 +310,7 @@ const PropertyDetails = () => {
       {allImages.length > 1 && (
         <div className="bg-slate-50 py-6">
           <div className="max-w-7xl mx-auto px-6">
-            <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3">
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2 sm:gap-3">
               {allImages.map((image, index) => (
                 <button
                   key={index}
@@ -338,9 +338,9 @@ const PropertyDetails = () => {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-6 py-12">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
           {/* Left Column - Main Content */}
-          <div className="lg:col-span-2 space-y-8">
+          <div className="md:col-span-2 space-y-6 md:space-y-8">
             {/* Property Overview */}
             <div className="bg-white rounded-3xl border border-slate-200 shadow-lg p-8">
               <h2 className="text-3xl font-bold text-[#1f2b52] mb-6">Property Overview</h2>
@@ -350,9 +350,9 @@ const PropertyDetails = () => {
             </div>
 
             {/* Property Details */}
-            <div className="bg-white rounded-3xl border border-slate-200 shadow-lg p-8">
-              <h2 className="text-3xl font-bold text-[#1f2b52] mb-6">Property Details</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="bg-white rounded-3xl border border-slate-200 shadow-lg p-6 sm:p-8">
+              <h2 className="text-2xl sm:text-3xl font-bold text-[#1f2b52] mb-4 sm:mb-6">Property Details</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                 <div className="flex justify-between items-center py-3 border-b border-gray-100">
                   <span className="text-gray-600 font-medium">Property Type</span>
                   <span className="text-gray-900 font-semibold">{property.type}</span>
@@ -410,7 +410,7 @@ const PropertyDetails = () => {
                 {property.features?.length > 0 && (
                   <div className="mb-6">
                     <h3 className="text-xl font-semibold text-gray-800 mb-4">Interior Features</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       {property.features.map((feature, index) => (
                         <div key={index} className="flex items-center gap-3">
                           <MdCheckCircle className="text-green-500 text-xl flex-shrink-0" />
@@ -424,7 +424,7 @@ const PropertyDetails = () => {
                 {property.amenities?.length > 0 && (
                   <div>
                     <h3 className="text-xl font-semibold text-gray-800 mb-4">Building Amenities</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       {property.amenities.map((amenity, index) => (
                         <div key={index} className="flex items-center gap-3">
                           <MdCheckCircle className="text-blue-500 text-xl flex-shrink-0" />
@@ -439,9 +439,9 @@ const PropertyDetails = () => {
 
             {/* Floor Plans */}
             {property.floorPlans?.length > 0 && (
-              <div className="bg-white rounded-3xl border border-slate-200 shadow-lg p-8">
-                <h2 className="text-3xl font-bold text-[#1f2b52] mb-6">Floor Plans</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="bg-white rounded-3xl border border-slate-200 shadow-lg p-6 sm:p-8">
+                <h2 className="text-2xl sm:text-3xl font-bold text-[#1f2b52] mb-4 sm:mb-6">Floor Plans</h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                   {property.floorPlans.map((plan, index) => (
                     <div key={index} className="rounded-2xl overflow-hidden border border-gray-200 hover:shadow-lg transition-shadow cursor-pointer">
                       <img
@@ -640,7 +640,7 @@ const PropertyDetails = () => {
               <h2 className="text-3xl font-bold text-[#1f2b52] mb-2">Similar Properties</h2>
               <p className="text-gray-600">You might also be interested in these properties</p>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
               {relatedProperties.map((relatedProperty) => (
                 <PropertyCard key={relatedProperty._id} property={relatedProperty} />
               ))}

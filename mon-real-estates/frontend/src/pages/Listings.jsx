@@ -45,7 +45,7 @@ const Listings = () => {
   if (error) return <p className="text-center text-red-500 py-12">{error}</p>;
 
   return (
-    <div className="max-w-7xl mx-auto p-6 sm:p-8">
+    <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
       <section className="rounded-[36px] overflow-hidden bg-gradient-to-r from-slate-900 via-indigo-700 to-cyan-700 text-white shadow-2xl mb-10">
         <div className="p-8 md:p-12 lg:p-16">
           <div className="md:flex md:items-center md:justify-between gap-8">
@@ -60,18 +60,18 @@ const Listings = () => {
                 Browse verified properties, compare prices, and explore the best homes across Addis Ababa and nearby areas.
               </p>
             </div>
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-              <div className="rounded-3xl bg-white/10 p-6 text-center">
-                <p className="text-4xl font-bold">{totalProperties}</p>
-                <p className="mt-2 text-sm text-slate-200">Total listings</p>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 mt-4 md:mt-0">
+              <div className="rounded-3xl bg-white/10 p-4 sm:p-6 text-center">
+                <p className="text-2xl sm:text-4xl font-bold">{totalProperties}</p>
+                <p className="mt-1 sm:mt-2 text-xs sm:text-sm text-slate-200">Total listings</p>
               </div>
-              <div className="rounded-3xl bg-white/10 p-6 text-center">
-                <p className="text-4xl font-bold">{filteredCount}</p>
-                <p className="mt-2 text-sm text-slate-200">Matching results</p>
+              <div className="rounded-3xl bg-white/10 p-4 sm:p-6 text-center">
+                <p className="text-2xl sm:text-4xl font-bold">{filteredCount}</p>
+                <p className="mt-1 sm:mt-2 text-xs sm:text-sm text-slate-200">Matching results</p>
               </div>
-              <div className="rounded-3xl bg-white/10 p-6 text-center">
-                <p className="text-4xl font-bold">{propertyTypes.length}</p>
-                <p className="mt-2 text-sm text-slate-200">Property types</p>
+              <div className="rounded-3xl bg-white/10 p-4 sm:p-6 text-center col-span-2 sm:col-span-1">
+                <p className="text-2xl sm:text-4xl font-bold">{propertyTypes.length}</p>
+                <p className="mt-1 sm:mt-2 text-xs sm:text-sm text-slate-200">Property types</p>
               </div>
             </div>
           </div>
@@ -79,17 +79,17 @@ const Listings = () => {
       </section>
 
       <section className="rounded-[32px] bg-white border border-slate-200 shadow-xl p-6 md:p-8 mb-10">
-        <div className="md:flex md:items-center md:justify-between gap-6">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 md:gap-6">
           <div className="md:flex-1">
             <SearchBar filters={filters} setFilters={setFilters} />
           </div>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:w-fit">
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-auto md:flex md:gap-3">
             {propertyTypes.map((type) => (
               <button
                 key={type}
                 type="button"
                 onClick={() => setFilters({ ...filters, type })}
-                className={`rounded-3xl px-4 py-3 text-sm font-semibold transition ${
+                className={`rounded-2xl sm:rounded-3xl px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-semibold transition whitespace-nowrap ${
                   filters.type === type
                     ? "bg-slate-900 text-white shadow-lg"
                     : "bg-slate-100 text-slate-700 hover:bg-slate-200"

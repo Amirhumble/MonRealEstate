@@ -78,13 +78,13 @@ const PropertyCard = ({ property, showSaveButton = true }) => {
   };
 
   return (
-    <div className="border-0 rounded-xl shadow-lg hover:shadow-2xl hover:-translate-y-3 transition-all duration-500 p-6 bg-gradient-to-br from-blue-50 to-indigo-100 relative overflow-hidden group">
+    <div className="border-0 rounded-xl shadow-lg hover:shadow-2xl hover:-translate-y-1 sm:hover:-translate-y-3 transition-all duration-500 p-4 sm:p-6 bg-gradient-to-br from-blue-50 to-indigo-100 relative overflow-hidden group">
       {/* Save Button */}
       {showSaveButton && (
         <button
           onClick={handleSaveToggle}
           disabled={isLoading}
-          className={`absolute top-4 right-4 z-10 p-2 rounded-full transition-all duration-200 ${
+          className={`absolute top-3 right-3 sm:top-4 sm:right-4 z-10 p-1.5 sm:p-2 rounded-full transition-all duration-200 ${
             isSaved 
               ? 'bg-[#e81d2b] text-white shadow-lg' 
               : 'bg-white/80 text-gray-600 hover:bg-white hover:text-[#e81d2b]'
@@ -92,11 +92,11 @@ const PropertyCard = ({ property, showSaveButton = true }) => {
           title={isSaved ? 'Remove from saved' : 'Save property'}
         >
           {isLoading ? (
-            <div className="animate-spin h-5 w-5 border-2 border-current border-t-transparent rounded-full"></div>
+            <div className="animate-spin h-4 w-4 sm:h-5 sm:w-5 border-2 border-current border-t-transparent rounded-full"></div>
           ) : isSaved ? (
-            <HiHeart className="h-5 w-5" />
+            <HiHeart className="h-4 w-4 sm:h-5 sm:w-5" />
           ) : (
-            <HiOutlineHeart className="h-5 w-5" />
+            <HiOutlineHeart className="h-4 w-4 sm:h-5 sm:w-5" />
           )}
         </button>
       )}

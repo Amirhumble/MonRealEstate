@@ -100,13 +100,13 @@ const Home = () => {
             <p className="mb-4 inline-flex rounded-full bg-white/10 px-4 py-2 text-sm uppercase tracking-[0.3em] text-white/80">
               Discover exceptional living
             </p>
-            <h1 className="text-5xl md:text-6xl font-black leading-tight mb-6" style={{ fontFamily: "Montserrat, sans-serif" }}>
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-black leading-tight mb-6" style={{ fontFamily: "Montserrat, sans-serif" }}>
               Live better in Addis with modern homes and seamless service.
             </h1>
-            <p className="mx-auto mb-8 max-w-2xl text-lg text-white/80">
+            <p className="mx-auto mb-6 sm:mb-8 max-w-2xl text-base sm:text-lg text-white/80">
               Browse curated listings, get expert guidance, and move into a home that fits your lifestyle.
             </p>
-            <div className="flex flex-col gap-4 sm:flex-row sm:justify-center">
+            <div className="flex flex-col gap-3 sm:gap-4 sm:flex-row sm:justify-center">
               <Link
                 to="/listings"
                 className="inline-flex items-center justify-center rounded-full bg-[#e81d2b] px-8 py-3 text-sm font-semibold uppercase tracking-wide transition hover:bg-red-700"
@@ -122,27 +122,27 @@ const Home = () => {
             </div>
           </div>
 
-          <div className="mt-16 grid gap-4 sm:grid-cols-3">
-            <div className="rounded-3xl border border-white/10 bg-white/10 p-5 backdrop-blur-sm">
-              <p className="text-3xl">🏡</p>
-              <p className="mt-4 text-xl font-semibold">250+ listings</p>
-              <p className="mt-2 text-sm text-white/80">A wide selection of homes for every budget.</p>
+          <div className="mt-12 sm:mt-16 grid gap-3 sm:gap-4 sm:grid-cols-3">
+            <div className="rounded-2xl sm:rounded-3xl border border-white/10 bg-white/10 p-4 sm:p-5 backdrop-blur-sm">
+              <p className="text-2xl sm:text-3xl">🏡</p>
+              <p className="mt-3 sm:mt-4 text-lg sm:text-xl font-semibold">250+ listings</p>
+              <p className="mt-1 sm:mt-2 text-xs sm:text-sm text-white/80">A wide selection of homes for every budget.</p>
             </div>
-            <div className="rounded-3xl border border-white/10 bg-white/10 p-5 backdrop-blur-sm">
-              <p className="text-3xl">🗝️</p>
-              <p className="mt-4 text-xl font-semibold">Fast closings</p>
-              <p className="mt-2 text-sm text-white/80">Move into your new home with confidence and speed.</p>
+            <div className="rounded-2xl sm:rounded-3xl border border-white/10 bg-white/10 p-4 sm:p-5 backdrop-blur-sm">
+              <p className="text-2xl sm:text-3xl">🗝️</p>
+              <p className="mt-3 sm:mt-4 text-lg sm:text-xl font-semibold">Fast closings</p>
+              <p className="mt-1 sm:mt-2 text-xs sm:text-sm text-white/80">Move into your new home with confidence and speed.</p>
             </div>
-            <div className="rounded-3xl border border-white/10 bg-white/10 p-5 backdrop-blur-sm">
-              <p className="text-3xl">🤝</p>
-              <p className="mt-4 text-xl font-semibold">Trusted experts</p>
-              <p className="mt-2 text-sm text-white/80">Local knowledge, friendly support, and tailored advice.</p>
+            <div className="rounded-2xl sm:rounded-3xl border border-white/10 bg-white/10 p-4 sm:p-5 backdrop-blur-sm">
+              <p className="text-2xl sm:text-3xl">🤝</p>
+              <p className="mt-3 sm:mt-4 text-lg sm:text-xl font-semibold">Trusted experts</p>
+              <p className="mt-1 sm:mt-2 text-xs sm:text-sm text-white/80">Local knowledge, friendly support, and tailored advice.</p>
             </div>
           </div>
         </div>
       </section>
 
-      <section className="bg-slate-50 py-16">
+      <section className="bg-slate-50 py-12 sm:py-16">
         <div className="max-w-6xl mx-auto px-6">
           <div className="mb-12 text-center">
             <p className="text-sm uppercase tracking-[0.35em] text-[#e81d2b]">Featured Collection</p>
